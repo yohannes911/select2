@@ -7,7 +7,7 @@ Select 2
 
 ### Datums ###
 
-Threads are numbered as 1 and 2.
+Threads are numbered as 0 and 1.
 
 The protocol uses two fields:
 
@@ -16,27 +16,40 @@ The protocol uses two fields:
 
 ### Protocol ###
 
-Assume that thread i enters the selection (i = 1 or 2). 
+Assume that thread i enters the selection (i = 0 or 1). 
 
 Then the pseudo code is the following:
 
--- check whether the other thread already entered, if yes exit  
-
-    if active[(i + 1) % 2] then return 1 // 1 means not selected
-
--- flag myself as choosable
+-- mark myself as active
 
     active[i] = true
 
--- check again whether the other thread already entered and it is the grantee, if yes, cleanup and exit
+-- check whether the other thread already entered and whether it is the grantee, if yes, cleanup and exit
 
-    if choose[(i + 1) % 2] and grantee != i then
+    if active[(i + 1) % 2] and grantee != i then
        active[i] = false
        grantee = i
-       return 0 // 1 means not selected
+       return false
 
--- otherwise i was chosen, cleanup and exit
+-- otherwise thread i was chosen, cleanup and exit
 
     else
        active[i] = false
-       return 0 // 0 means selected
+       return true
+
+### Features ###
+
+**The protocol provides the following feature: Only one thread is selected at any time**
+ 
+**Statement 1: If two threads executes the selection protocol symultaneously, then only one is selected**.  
+Formally:
+
+If both active[0] and active[1] is true before any thread is exiting, than only one thread will be selected.
+
+That is to say, _simultaneous run_ means that both thread entered the first statement (`active[i] = true`), before anyone exited.
+	
+Proof: Since both `active[0]` and `active[1]` is `true` only the grantee could be selected.
+
+**Statement 2: Only one thread is selected at any time**
+
+Proof: If only one thread is entering the selection protocol, than obviously it will be selected. This and the above statement 1 together proves this statement.
