@@ -1,0 +1,4 @@
+mt
+==
+
+Playground for multithreading
