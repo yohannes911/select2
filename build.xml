@@ -1,0 +1,55 @@
+<project default="dist">
+	<property name="src" location="src"/>
+	<property name="doc" location="doc"/>
+	<property name="build" location="build"/>
+	<property name="dist"  location="dist"/>
+   
+   <target name="dev-dist" depends="dist, dev-doc"/>
+   
+   <target name="dev-doc">
+      <javadoc 
+         packagenames="mt.*"
+         destdir="${dist}/doc/api"
+         author="true"
+         version="true"
+         use="true"
+         windowtitle="Multithreading playground"
+         Encoding="utf-8"
+         docencoding="utf-8"
+         Locale="hu_HU"
+         charset="UTF-8">
+         
+         <packageset dir="${src}" defaultexcludes="yes">
+            <include name="**"/>
+         </packageset>   
+      
+      </javadoc>
+   </target>
+   
+	<target name="clean-dist" depends="clean, build, dist"/>
+   
+	<target name="dist" depends="build">
+		<mkdir dir="${dist}"/>
+		<mkdir dir="${dist}/doc"/>
+		<mkdir dir="${dist}/lib"/>
+		
+		<!-- package Java classes -->
+		<jar jarfile="${dist}/lib/mt.jar" basedir="${build}"/>
+		
+		<!-- copy docs -->
+		<copy file="README.md" todir="${dist}"/>
+		<copy file="doc/protocol.md" todir="${dist}/doc"/>
+		
+		<delete dir="${build}"/>
+	</target>
+
+	<target name="build" description="compile Java source">
+		<mkdir dir="${build}"/>
+		<javac srcdir="${src}" destdir="${build}" encoding="UTF-8"/>
+	</target>
+	
+	<target name="clean">
+		<delete dir="${build}"/>
+		<delete dir="${dist}"/>	
+	</target>
+</project>

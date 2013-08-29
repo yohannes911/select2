@@ -1,10 +1,8 @@
 Protocol
 ===============================================================================
 
-* The Draw 2 API lets the system choose between 2 threads 
-* The CAS 2 API implements compare and swap for 2 threads, it builds on Draw 2
 
-Draw 2 protocol
+Select 2
 -------------------------------------------------------------------------------
 
 ### Datums ###
@@ -13,32 +11,32 @@ Threads are numbered as 1 and 2.
 
 The protocol uses two fields:
 
-* choose[] - flags that thread 1 or 2 is choosable
-* grantee - in case when both thread is choosable, the grantee will be chosen
+* active[] - marks whether thread 1 or 2 is active (under selection)
+* grantee - in case when both thread is active, the grantee will be chosen
 
 ### Protocol ###
 
-Assume that thread i enters the draw (i = 1 or 2). 
+Assume that thread i enters the selection (i = 1 or 2). 
 
 Then the pseudo code is the following:
 
 -- check whether the other thread already entered, if yes exit  
 
-    if choose[(i + 1) % 2] then return i
+    if active[(i + 1) % 2] then return 1 // 1 means not selected
 
 -- flag myself as choosable
 
-    choose[i] = 1
+    active[i] = true
 
--- check again whether the other thread already entered, if yes, cleanup and exit
+-- check again whether the other thread already entered and it is the grantee, if yes, cleanup and exit
 
-    if choose[(i + 1) % 2] then
-       choose[i] = 0
+    if choose[(i + 1) % 2] and grantee != i then
+       active[i] = false
        grantee = i
-       return (i + 1) % 2
+       return 0 // 1 means not selected
 
 -- otherwise i was chosen, cleanup and exit
 
     else
-       choose[i] = 0
-       return i
+       active[i] = false
+       return 0 // 0 means selected
