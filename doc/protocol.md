@@ -19,7 +19,7 @@ This synchroinzation primitive can be used to execute critical sections:
 
 Threads are numbered as `0` and `1` in the protocol.
 
-The protocol uses two fields:
+The protocol uses the following fields:
 
 * `active: boolean[2]` - marks whether thread `0` or `1` is active (entered the selection protocol)
 * `token: 0..1` - only that thread can be chosen who owns the token (ie. thread `0` can be chosen if `token == 0`)
