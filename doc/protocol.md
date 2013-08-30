@@ -5,13 +5,20 @@ Protocol
 Select 2
 -------------------------------------------------------------------------------
 
+The Select 2 protocol can select one and only one thread from two threads. 
+This synchronization primivite provides the following guaratee:
+
+**Only one thread is selected at any time**
+
+This primitive can be used for instance to execute critical sections of code.
+
 ### Datums ###
 
 Threads are numbered as 0 and 1.
 
 The protocol uses two fields:
 
-* active[] - marks whether thread 1 or 2 is active (entered the selection protocol)
+* active[] - marks whether thread 0 or 1 is active (entered the selection protocol)
 * token - only that thread can be chosen who owns the token
 
 ### Protocol ###
