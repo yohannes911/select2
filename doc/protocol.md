@@ -5,7 +5,7 @@ Protocol
 Select 2
 -------------------------------------------------------------------------------
 
-The Select 2 protocol is a lock free protocol that can select one and only one thread from two threads.
+The Select 2 protocol is a wait-free protocol that can select one and only one thread from two threads.
 
 This synchronization primitive provides the following guaratee:
 
@@ -13,7 +13,7 @@ This synchronization primitive provides the following guaratee:
 
 This synchroinzation primitive can be used to execute critical sections:
 
-**Select 2 can be used to execute critical sections atomically in a lock free manner.**
+**Select 2 can be used to execute critical sections atomatically, in a wait-free manner.**
 
 ### Datums ###
 
@@ -89,13 +89,13 @@ Then the pseudo code is the following:
 
 ### Features ###
 
-MUST BE UPDATED TO REFLECT `wait` AND Lemma CHANGES
+PROOF MUST BE REVISED DUE TO THE CHANGES OF THE Lemma
 
-**Statement 1: The protocol provides the following feature: Only one thread is selected at any time. Formally: either `not selected[0]` or `not selected[1]` always holds.**
+**Statement 1: Select 2 is safe in the following manner: the protocol guarantees that one and only one thread is selected at any time. Formally:  `not selected[0] or not selected[1]` always holds.**
 	
 Proof: Indirectly assume, that at some point in time both thread is selected. There are 3 possible cases:
 
-1. Bot thread is token owner
+1. Both thread is token owner
 1. None of the threads is token owner
 1. One of the threads is token owner the other is not
 
@@ -137,9 +137,20 @@ Proof:
 
 The Select 2 protocol has another feature, namely it is lock free. In order to see what it means, we need to examine the protocol's application:
 
-### Application protocol ###
+**Statement 2: Select 2 is wait-free in: each thread that entered the protocol terminates in finite steps**
 
-MUST BE UPDATED TO REFLECT `wait`
+Proof: Only the token owner has a conditional wait in section 3.2., a thread who does not own the token obviously terminates in finite steps.
+
+Assume that thread `0` is a token owner and it entered the conditional wait in section 3.2. At some time before this event the other thread was active as well, otherwise thread `0` would not go into the loop.
+
+At that time, when it was detected active, the other thread, thread `1` could not be token owner as well (`token != 1`). Hence the other thread finishes in finite steps. Then there are two possible scenarios:
+
+1. The next loop cycle comes before thread `1` becomes active again. Since the loop checks if the other thread is passive, it will exit in the next cycle.
+2. It is also possible that thread `1` becomes active again between two loop cycles. In this case there are two possible scenarios:
+   1. Thread `1` exited the previous selection w/o taking the token. In this case it will wake up thread `0` in section 3.1, in finite stepes.
+   1. Thread `1` exited the previous selection by taking the token, ie. it became the new token owner. Since the loop checks if the token ownership changed, it will exit in the next cycle.
+
+### Application protocol ###
 
 In order to use the protocol to execute critical sections it must be extended in the following way:
 
@@ -153,18 +164,24 @@ During the selection period (while the thread is selected) the thread can execut
 
 The Select 2 protocol in the above manner is lock free and safe:
 
-**Statement 2: Select 2 is safe in the following manner: blocks are never executed in parallel.**
+**Statement 3: The extended Select 2 protocol is safe in the following manner: blocks are never executed in parallel.**
 
 Proof: When blocks are executed in a thread, that thread must be selected. However due to Statement 1, threads are never selected in parallel, hence blocks are never executed in parallel.
 
-**Statement 3: Select 2 is lock free in the following manner: the protocol does not block (depends on / waits for) the business code running in another thread.**
+**Statement 4: The extended Select 2 protocol is wait-free in the following manner:**
 
-Proof: The protocol does not have blocking logic except for 3.2, when the token owner waits for the other thread to decide what to do. However if we examine what happens in the other thread during this wait, it turns out that section 3.2. waits only a finite number of steps and these steps does not involve external logic since token owner ship is taken before the injected block is executed.
+1. **The execution of one thread does not depend on (wait for) the execution of the other thread.**
+1. **If the injected block is wait-free then the whole Select 2 system is wait-free as well.**
+
+Proof: 
+
+1. Select 2 logic does not depend on the injected block.
+2. According to Statement 2 above Select 2 itself is wait-free. Hence if the business logic is wait-free as well, then the whole is wait-free, too.
 
 Notes: 
 
 * The above safety feature guarantees that critical sections are executed atomically or sequentally and never in parallel. However Select 2 does not guarantee that the block will be ever executed. It only guarantees that if it is executed than no other block is executed in parallel.
-* Lock free (in the above manner) does not mean that the business code running in one thread cannot block the other thread. There could be situations when the scheduler does not let other threads run before the business code exits. Select 2 only guarantees that its selection (or synchronization) logic does not depend on external, injected logic.
+* Independency does not mean that the business code running in one thread cannot block the other thread. There could be situations when the scheduler does not let other threads run before the business code exits. 
 
 ### TODO ###
 
