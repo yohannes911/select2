@@ -27,12 +27,13 @@ public class Clip2 extends Debuggable{
 	
 	/**
 	 * Pops the object from the clipboard if any. 
-	 * After popping the clipboard is cleaned, waits for another object.
+	 * After popping the clipboard is cleaned, waits for another object, one must push before another pop.
+	 * Returns the clipboard object if pop was successful, otherwise null.
 	 */
 	public Object pop(){
 		try{
 			if ( select2.execute(pop) ){
-				return pop.getOldVal();
+				return pop.getValue();
 			}
 			else{
 				return null;
@@ -46,6 +47,7 @@ public class Clip2 extends Debuggable{
 	/**
 	 * Pushes an object to the clipboard, if it is waiting for it, otherwise does nothing. 
 	 * After pushing, the clipboard gets full, one must pop before another push.  
+	 * Returns true if push was successful, otherwise false.
 	 */
 	public boolean push(Object newVal){
 		try{
@@ -53,7 +55,7 @@ public class Clip2 extends Debuggable{
 				throw new NullPointerException();
 			}
 			
-			push.setNewVal(newVal);
+			push.setValue(newVal);
 			
 			return select2.execute(push);
 		}
@@ -65,22 +67,25 @@ public class Clip2 extends Debuggable{
 	protected Pop pop = new Pop();
 	
 	/**
-	 * A clojure that implements pop.
+	 * A closure that implements pop.
 	 */
 	protected class Pop implements Closure{
-		private Object oldVal;
+		private Object _value;
 
-		public Object getOldVal(){
-			return oldVal;
+		/**
+		 * Returns the value popped.
+		 */
+		public Object getValue(){
+			return _value;
 		}
 		
 		public boolean execute(){
 			if (!setable){
-				oldVal = value;
+				_value = value;
 				value = null;
 				setable = true;
 				if (g_debug){
-					g_info("popped " + oldVal);
+					g_info("popped " + _value);
 				}
 				return true;
 			}
@@ -96,30 +101,30 @@ public class Clip2 extends Debuggable{
 	protected Push push = new Push();
 	
 	/**
-	 * A clojure that implements push.
+	 * A closure that implements push.
 	 */
 	protected class Push implements Closure{
-		private Object newVal;
+		private Object _value;
 		
-		public Push(){
-		}
-		
-		public void setNewVal(Object newVal){
-			this.newVal = newVal;
+		/**
+		 * Sets the value to push.
+		 */
+		public void setValue(Object value){
+			_value = value;
 		}
 		
 		public boolean execute(){
 			if (setable){
-				value = newVal;
+				value = _value;
 				setable = false;
 				if (g_debug){
-					g_info("pushed " + newVal);
+					g_info("pushed " + _value);
 				}
 				return true;
 			}
 			else{
 				if (g_debug){
-					g_info("invalid state: " + newVal + " not pushed");
+					g_info("invalid state: " + _value + " not pushed");
 				}			
 				return false;
 			}

@@ -5,7 +5,7 @@ package mt;
  * <br/>
  * This synchronization primitive provides the following guaratee:<br/>
  * <br/> 
- * <b>Select 2 guarantees that only one thread is selected at any time</b>
+ * <b>Select 2 guarantees that only one thread is selected at any time</b><br/> 
  * <br/>
  * This synchroinzation primitive can be used to execute critical sections:<br/>
  * <br/>
@@ -39,6 +39,8 @@ public class Select2 extends Debuggable{
 
 	/**
 	 * Selects the current thread or not - if it is selected then it executes the given closure, otherwise not.
+	 * Returns true if the closure was executed and its execution was successful, otherwise false. That is to say: false 
+	 * can mean either that the closure was not selected to run or it was executed but failed (returned false). 
 	 */
 	public boolean execute(Closure closure) throws Throwable{
 		// determine internal thread number
