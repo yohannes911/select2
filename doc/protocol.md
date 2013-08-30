@@ -46,7 +46,7 @@ Then the pseudo code is the following:
 
     if active[i + 1]
 
--- -- 3.1. check if I am not the token owner, wake up token owner, cleanup and exit
+-- -- 3.1. if I am not the token owner, wake up token owner, cleanup and exit
 
        if !token_owner 
            wait[i+1] = false
@@ -118,12 +118,12 @@ Again, due to the following lemma, one of the threads should have detected that 
 Contradiction.
 
 
-**Lemma: If two threads run in parallel than one of the threads detects that the other is active in the 3.1. section. Formally:** 
+**Lemma: If two threads run in parallel than one of the threads detects that the other is active in section 3. Formally:** 
 
 if the following conditions hold:
 
 1. both thread is active at some point in time
-2. each check under 3.1 is executed before threads become passive
+2. each check under 3 is executed before threads become passive
 
 then one of the threads detects that the other thread is active.
 
