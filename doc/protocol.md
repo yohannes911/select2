@@ -14,12 +14,12 @@ This primitive can be used for instance to execute critical sections of code.
 
 ### Datums ###
 
-Threads are numbered as 0 and 1.
+Threads are numbered as `0` and `1` in the protocol.
 
 The protocol uses two fields:
 
-* active[] - marks whether thread 0 or 1 is active (entered the selection protocol)
-* token - only that thread can be chosen who owns the token
+* `active[]` - marks whether thread 0 or 1 is active (entered the selection protocol)
+* `token` - only that thread can be chosen who owns the token
 
 ### Protocol ###
 
