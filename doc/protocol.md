@@ -141,14 +141,12 @@ The Select 2 protocol has another feature, namely it is lock free. In order to s
 
 Proof: Only the token owner has a conditional wait in section 3.2., a thread who does not own the token obviously terminates in finite steps.
 
-Assume that thread `0` is a token owner and it entered the conditional wait in section 3.2. At some time before this event the other thread was active as well, otherwise thread `0` would not go into the loop.
+Assume that thread `0` is a token owner and it entered the conditional wait in section 3.2. At some time before this event the other thread was active as well, otherwise thread `0` would not go into the loop. At that time, when it was detected active, the other thread, thread `1` could not be token owner as well (`token != 1`). Hence the other thread finishes in finite steps. Then there are two possible scenarios:
 
-At that time, when it was detected active, the other thread, thread `1` could not be token owner as well (`token != 1`). Hence the other thread finishes in finite steps. Then there are two possible scenarios:
-
-1. The next loop cycle comes before thread `1` becomes active again. Since the loop checks if the other thread is passive, it will exit in the next cycle.
+1. The next loop cycle comes before thread `1` becomes active again. Since the loop checks if the other thread is passive, it will exit in the next cycle (because `active[0]` becomes false).
 2. It is also possible that thread `1` becomes active again between two loop cycles. In this case there are two possible scenarios:
-   1. Thread `1` exited the previous selection w/o taking the token. In this case it will wake up thread `0` in section 3.1, in finite stepes.
-   1. Thread `1` exited the previous selection by taking the token, ie. it became the new token owner. Since the loop checks if the token ownership changed, it will exit in the next cycle.
+   1. Thread `1` exited the previous selection w/o taking the token. In this case it will wake up thread `0` in section 3.1, in finite steps, hence the loop exits (because `wait[0]` becomes false).
+   1. Thread `1` exited the previous selection by taking the token, ie. it became the new token owner. Since token ownership won't change until thread `0` is in the wait loop and the loop checks if the token ownership changed, the loop will exit in the next cycle (because `token == 0` becomes false).
 
 ### Application protocol ###
 
@@ -185,7 +183,7 @@ Notes:
 
 ### TODO ###
 
-* Update proof to reflect wait state
+* Revise the proof according to lemma changes
 * Check the proof in multiprocessor envs
 * Formal verification through code
 * Benchmark the API
