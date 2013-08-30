@@ -11,45 +11,82 @@ Threads are numbered as 0 and 1.
 
 The protocol uses two fields:
 
-* active[] - marks whether thread 1 or 2 is active (under selection)
-* grantee - in case when both thread is active, the grantee will be chosen
+* active[] - marks whether thread 1 or 2 is active (entered the selection protocol)
+* token - only that thread can be chosen who owns the token
 
 ### Protocol ###
 
-Assume that thread i enters the selection (i = 0 or 1). 
+Assume that thread `i` enters the selection (`i = 0 or 1`). 
+
+Note: that `i + 1` means `(i+1) % 2` in the following code.
 
 Then the pseudo code is the following:
 
--- mark myself as active
+-- 1. mark myself as active
 
     active[i] = true
 
--- check whether the other thread already entered and whether it is the grantee, if yes, cleanup and exit
+-- 2. check whether I am the token owner
 
-    if active[(i + 1) % 2] and grantee != i then
-       active[i] = false
-       grantee = i
-       return false
+   token_owner = token == i
 
--- otherwise thread i was chosen, cleanup and exit
+-- 3. check whether the other thread already entered the selection protocol
 
-    else
-       active[i] = false
-       return true
+    if active[i + 1]
+
+-- -- 3.1. if I am not the token owner cleanup and exit
+
+       if !token_owner
+          active[i] = false
+          return false
+
+-- -- 3.2. if I am the token owner wait for the other thread till it decides what to do 
+       
+       else while token == i and active[i + 1]
+          yield
+
+-- 4. now different cases could happen
+
+-- 4.1. if I was the token owner but the other thread took the ownership so far, then I am not selected, cleanup and exit
+
+    if token_owner and token != i
+          active[i] = false
+          return false
+
+-- 4.2. if I was and still is the token owner, then I am selected, give up the token ownership, cleanup and exit
+
+    if token_owner and token == i
+          token = i + 1
+          active[i] = false
+          return true
+
+-- 4.3. if I was not the token owner but reached this point, than I am selected, get the token ownership, cleanup and exit
+
+    if !token_owner
+          token = i
+          active[i] = false
+          return true
 
 ### Features ###
 
 **The protocol provides the following feature: Only one thread is selected at any time**
- 
-**Statement 1: If two threads executes the selection protocol symultaneously, then only one is selected**.  
-Formally:
 
-If both active[0] and active[1] is true before any thread is exiting, than only one thread will be selected.
+**Definition 1.: Two thread is said to run the selection protocol in parallel, if both thread is active in any time.** Formally:
 
-That is to say, _simultaneous run_ means that both thread entered the first statement (`active[i] = true`), before anyone exited.
+    (1)    active[0] and active[1]
+
+**Statement 1: If two threads runs the selection protocol in parallel, then only one is selected**.  
 	
-Proof: Since both `active[0]` and `active[1]` is `true` only the grantee could be selected.
+Proof: TODO
 
 **Statement 2: Only one thread is selected at any time**
 
-Proof: If only one thread is entering the selection protocol, than obviously it will be selected. This and the above statement 1 together proves this statement.
+Proof: If only one thread is entering the selection protocol, than obviously it will be selected. This and the above statement 1 gives the proof.
+
+### Use case 1 - Critical sections ###
+
+TODO
+
+### Use case 2 - Guarded synch ###
+
+TODO
