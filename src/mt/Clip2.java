@@ -1,5 +1,7 @@
 package mt;
 
+import java.util.Random;
+
 /**
  * A clipboard object threads can share objects through.
  */
@@ -31,15 +33,20 @@ public class Clip2 extends Debuggable{
 	 * Returns the clipboard object if pop was successful, otherwise null.
 	 */
 	public Object pop(){
-		try{
-			if ( select2.execute(pop) ){
-				return pop.getValue();
+		if (!setable){
+			try{
+				if ( select2.execute(pop) ){
+					return pop.getValue();
+				}
+				else{
+					return null;
+				}
 			}
-			else{
+			catch(Throwable th){
 				return null;
 			}
 		}
-		catch(Throwable th){
+		else{
 			return null;
 		}
 	}
@@ -50,16 +57,21 @@ public class Clip2 extends Debuggable{
 	 * Returns true if push was successful, otherwise false.
 	 */
 	public boolean push(Object newVal){
-		try{
-			if (newVal == null){
-				throw new NullPointerException();
+		if (setable){
+			try{
+				if (newVal == null){
+					throw new NullPointerException();
+				}
+				
+				push.setValue(newVal);
+				
+				return select2.execute(push);
 			}
-			
-			push.setValue(newVal);
-			
-			return select2.execute(push);
+			catch(Throwable th){
+				return false;
+			}
 		}
-		catch(Throwable th){
+		else{
 			return false;
 		}
 	}
@@ -138,9 +150,8 @@ public class Clip2 extends Debuggable{
 	public static void main(String[] args){
 		Clip2Thread[] threads = new Clip2Thread[2];
 		
-		for (int i = 0; i<2 ;i++){
-			threads[i] = new Clip2Thread();
-		}
+		threads[0] = new Clip2Thread(true);
+		threads[1] = new Clip2Thread(false);
 		
 		Clip2 clip2 = new Clip2(threads, true);
 		
@@ -154,23 +165,36 @@ public class Clip2 extends Debuggable{
 	 * A simple class for testing purposes.
 	 */
 	private static class Clip2Thread extends Thread{
+		private boolean push;
 		private Clip2 clip2;
+		private Random random;
+		
+		public Clip2Thread(boolean push){
+			this.push = push;
+			if (push){
+				random = new Random();
+			}
+		}
 		public void setClip2(Clip2 clip2){
 			this.clip2 = clip2;
 		}
 		public void run(){
 			long id = Thread.currentThread().getId();
+			int val;
 			for (int i = 0; i< 10; i++){
-				
-				System.out.println( "DEBUG-" + id + ":\tpushing... " + id);
-				boolean pushed = clip2.push(id + "");
-				System.out.println( "DEBUG-" + id + ":\tpushing " + id + " successful? " + pushed);
-				Thread.yield();
-				
-				System.out.println( "DEBUG-" + id + ":\tpopping..." );
-				Object popped = clip2.pop();
-				System.out.println( "DEBUG-" + id + ":\tpopping successful? " + (popped != null) + " popped: " + popped);
-				Thread.yield();
+				if (push){
+					val = 1 + random.nextInt(100);
+					System.out.println( "DEBUG-" + id + ":\tpushing... " + val);
+					boolean pushed = clip2.push(val + "");
+					System.out.println( "DEBUG-" + id + ":\tpushing " + val + " successful? " + pushed);
+					Thread.yield();
+				}
+				else{
+					System.out.println( "DEBUG-" + id + ":\tpopping..." );
+					Object popped = clip2.pop();
+					System.out.println( "DEBUG-" + id + ":\tpopping successful? " + (popped != null) + " popped: " + popped);
+					Thread.yield();
+				}
 			}
 		}	
 	}
