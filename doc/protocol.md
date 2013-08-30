@@ -5,12 +5,15 @@ Protocol
 Select 2
 -------------------------------------------------------------------------------
 
-The Select 2 protocol can select one and only one thread from two threads. 
-This synchronization primivite provides the following guaratee:
+The Select 2 protocol is a lock free protocol that can select one and only one thread from two threads.
 
-**Only one thread is selected at any time**
+This synchronization primitive provides the following guaratee:
 
-This primitive can be used for instance to execute critical sections of code.
+**Select 2 guarantees that only one thread is selected at any time**
+
+This synchroinzation primitive can be used be used to execute critical sections:
+
+**Select 2 can be used to execute critical sections atomically in a lock free manner.**
 
 ### Datums ###
 
@@ -26,7 +29,7 @@ The protocol uses two fields:
 
 Assume that thread `i` enters the selection (`i = 0 or 1`). 
 
-Note: that `i + 1` means `(i+1) % 2` in the following code.
+_Note that `i + 1` means `(i+1) % 2` in the following code._
 
 Then the pseudo code is the following:
 
@@ -81,8 +84,7 @@ Then the pseudo code is the following:
 
 ### Features ###
 
-**Statement: The protocol provides the following feature: Only one thread is selected at any time. Formally: either `not selected[0]` or `not selected[1]` always holds.**
-  
+**Statement 1: The protocol provides the following feature: Only one thread is selected at any time. Formally: either `not selected[0]` or `not selected[1]` always holds.**
 	
 Proof: Indirectly assume, that at some point in time both thread is selected. There are 3 possible cases:
 
@@ -108,18 +110,41 @@ Again, due to the following lemma, one of the threads should have detected that 
 
 Contradiction.
 
-**Lemma: If two threads run in parallel (`active[0] and active[1]` holds at any time) than one of the threads detects that the other is active in the 3.1. section.**
+**Lemma: If two threads run in parallel (ie. `active[0] and active[1]` holds at any time) than one of the threads detects that the other is active in the 3.1. section.**
 
-Proof: The thread that activated itself later must detect the other one as active. 
+Proof: Assume that thread `0` did not detect thread `1` as active. This means that thread `1` activated itself only after thread `0` executed its check. This also means that thread `1` activated itself later than thread `0`. However this means that thread `1` executed the check after thread `0` was already active, hence it detected thread `0` as active.
 
-### Application - Executing critical sections ###
+The Select 2 protocol has another feature, namely it is lock free. In order to see what it means, we need to examine the protocol's application:
 
-TODO
+### Application protocol ###
+
+In order to use the protocol to execute critical section it must be extended in the following way:
+
+During the selection period the thread can execute some code (think of closures or kinda). The pseudo code is the following:
+
+    selected[i] = true
+    block.execute
+    selected[i] = false
+
+, where block is a black box function (closure or such) injected into the selection protocol.
+
+The Select 2 protocol in the above manner is lock free and safe:
+
+**Statement 2: Select 2 is safe in the following manner: blocks are never executed in parallel**
+
+Proof: When blocks are executed in a thread, that thread must be selected. However due to Statement 1, threads are never selected in parallel, hencec blocks are never executed in parallel.
+
+_Note that Select 2 does not guarantee that the block will be ever executed. It only guarantees that if it is executed than no other block is executed in parallel._
+
+**Statement 3: Select 2 is lock free in the following manner: none of the threads depends on / waits for the business code of the other.**
+
+Proof: The Select 2 protocol does not depend on the injected code.
+
+_Note that this does not mean that the business code running in one thread cannot block the other thread. There could be situations when the scheduler does not let other threads runs before the business code exits._
 
 ### TODO ###
 
-* Check the protocol in multiprocessor envs, where true parallelism might occur. Hence such argument might not be correct: _The thread that activated itself later must detect the other one as active_.
-* Document protocol application
+* Check the proof in multiprocessor envs
 * Formal verification through code
 * Fix the API
 * Benchmark the API
