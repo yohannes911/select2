@@ -13,7 +13,7 @@ package mt;
  */
 public class Select2 extends Debuggable{
 	private long[] threads;
-	private volatile boolean[] active, selected;
+	private volatile boolean[] active, selected, wait;
 	private volatile int token;
 	
 	/**
@@ -42,6 +42,7 @@ public class Select2 extends Debuggable{
 	protected void init(Thread[] threads){
 		active = new boolean[2];
 		selected = new boolean[2];
+		wait = new boolean[2];
 		this.threads = new long[2];
 		for (int i = 0; i<2;i++){
 			this.threads[i] = threads[i].getId();
@@ -79,8 +80,9 @@ public class Select2 extends Debuggable{
 		// 3. check whether the other thread already entered the selection protocol
 		if (g_debug){ g_step_start(); }
 		if (active[(i + 1) % 2]){
-			// 3.1. if I am not the token owner cleanup and exit 
+			// 3.1. if I am not the token owner then wakeup owner, cleanup and exit 
 			if (!token_owner){
+				wait[(i+1) % 2] = false;
 				active[i] = false;
 				if (g_debug){ g_step_info("3.1. token owner is active, exiting"); g_step_finish("NOT SELECTED");}
 				return false;
@@ -88,11 +90,13 @@ public class Select2 extends Debuggable{
 			// 3.2. if I am the token owner wait for the other thread till it decides what to do 
 			else{
 				if (g_debug){ g_step_finish("3.2. waiting for the other thread..."); }
-				while ( token == i && active[(i + 1) % 2] ){
+				wait[i] = true;
+				while ( token == i && active[(i + 1) % 2] && wait[i]){
 					if (g_debug){ g_step_start(); }
 					Thread.yield();
 					if (g_debug){ g_step_finish(); }
 				}
+				wait[i] = true;
 			}
 		}
 		else{

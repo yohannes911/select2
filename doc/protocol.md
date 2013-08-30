@@ -24,6 +24,7 @@ The protocol uses the following fields:
 * `active: boolean[2]` - marks whether thread `0` or `1` is active (entered the selection protocol)
 * `token: 0..1` - only that thread can be chosen who owns the token (ie. thread `0` can be chosen if `token == 0`)
 * `selected: boolean[2]` - marks whether thread `0` or `1` is selected
+* `wait: boolean[2]` - marks whether thread `0` or `1` is waiting
 
 ### Protocol ###
 
@@ -45,16 +46,20 @@ Then the pseudo code is the following:
 
     if active[i + 1]
 
--- -- 3.1. if I am not the token owner cleanup and exit
+-- -- 3.1. check if I am not the token owner, wake up token owner, cleanup and exit
 
-       if !token_owner
-          active[i] = false
-          return false
+       if !token_owner 
+           wait[i+1] = false
+           active[i] = false
+           return false
 
 -- -- 3.2. if I am the token owner wait for the other thread till it decides what to do 
        
-       else while token == i and active[i + 1]
-          yield
+       else 
+		  wait[i] = true
+	      while token == i and active[i + 1] and wait[i]
+             yield
+          wait[i] = false
 
 -- 4. now different cases could happen
 
@@ -83,6 +88,8 @@ Then the pseudo code is the following:
           return true
 
 ### Features ###
+
+MUST BE UPDATED TO REFLECT `wait`
 
 **Statement 1: The protocol provides the following feature: Only one thread is selected at any time. Formally: either `not selected[0]` or `not selected[1]` always holds.**
 	
@@ -145,6 +152,7 @@ Notes:
 
 ### TODO ###
 
+* Update proof to reflect wait state
 * Check the proof in multiprocessor envs
 * Formal verification through code
 * Benchmark the API

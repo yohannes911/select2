@@ -45,7 +45,10 @@ public class Debuggable{
 			}
 			g_step_info("waiting...");
 			waits++;
-			Thread.yield();
+			try{
+				Thread.sleep(1000);
+			}
+			catch(Throwable th){}
 		}
 		if (msg != null){
 			g_step_info(msg);
