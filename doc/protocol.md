@@ -18,8 +18,8 @@ Threads are numbered as `0` and `1` in the protocol.
 
 The protocol uses two fields:
 
-* `active[]` - marks whether thread 0 or 1 is active (entered the selection protocol)
-* `token` - only that thread can be chosen who owns the token
+* `active: boolean[]` - marks whether thread `0` or `1` is active (entered the selection protocol)
+* `token: int` - only that thread can be chosen who owns the token (ie. thread `0` can be chosen if `token == 0`)
 
 ### Protocol ###
 
