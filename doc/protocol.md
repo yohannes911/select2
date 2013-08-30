@@ -11,7 +11,7 @@ This synchronization primitive provides the following guaratee:
 
 **Select 2 guarantees that only one thread is selected at any time**
 
-This synchroinzation primitive can be used be used to execute critical sections:
+This synchroinzation primitive can be used to execute critical sections:
 
 **Select 2 can be used to execute critical sections atomically in a lock free manner.**
 
@@ -118,29 +118,30 @@ The Select 2 protocol has another feature, namely it is lock free. In order to s
 
 ### Application protocol ###
 
-In order to use the protocol to execute critical section it must be extended in the following way:
+In order to use the protocol to execute critical sections it must be extended in the following way:
 
-During the selection period the thread can execute some code (think of closures or kinda). The pseudo code is the following:
+During the selection period (while the thread is selected) the thread can execute some injected code (closures or kinda). The pseudo code is the following:
 
     selected[i] = true
-    block.execute
+    block()
     selected[i] = false
 
-, where block is a black box function (closure or such) injected into the selection protocol.
+, where `block` is a black box function (closure or such) injected into the selection protocol.
 
 The Select 2 protocol in the above manner is lock free and safe:
 
-**Statement 2: Select 2 is safe in the following manner: blocks are never executed in parallel**
+**Statement 2: Select 2 is safe in the following manner: blocks are never executed in parallel.**
 
 Proof: When blocks are executed in a thread, that thread must be selected. However due to Statement 1, threads are never selected in parallel, hencec blocks are never executed in parallel.
-
-_Note that Select 2 does not guarantee that the block will be ever executed. It only guarantees that if it is executed than no other block is executed in parallel._
 
 **Statement 3: Select 2 is lock free in the following manner: none of the threads depends on / waits for the business code of the other.**
 
 Proof: The Select 2 protocol does not depend on the injected code.
 
-_Note that this does not mean that the business code running in one thread cannot block the other thread. There could be situations when the scheduler does not let other threads runs before the business code exits._
+Notes: 
+
+* The above safety feature guarantees that critical sections are executed atomically or sequentally and never in parallel. However Select 2 does not guarantee that the block will be ever executed. It only guarantees that if it is executed than no other block is executed in parallel.
+* Lock free (in the above manner) does not mean that the business code running in one thread cannot block the other thread. There could be situations when the scheduler does not let other threads run before the business code exits.
 
 ### TODO ###
 
