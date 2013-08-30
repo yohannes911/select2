@@ -89,7 +89,7 @@ Then the pseudo code is the following:
 
 ### Features ###
 
-MUST BE UPDATED TO REFLECT `wait`
+MUST BE UPDATED TO REFLECT `wait` AND Lemma CHANGES
 
 **Statement 1: The protocol provides the following feature: Only one thread is selected at any time. Formally: either `not selected[0]` or `not selected[1]` always holds.**
 	
@@ -117,13 +117,29 @@ Again, due to the following lemma, one of the threads should have detected that 
 
 Contradiction.
 
-**Lemma: If two threads run in parallel (ie. `active[0] and active[1]` holds at any time) than one of the threads detects that the other is active in the 3.1. section.**
 
-Proof: Assume that thread `0` did not detect thread `1` as active. This means that thread `1` activated itself only after thread `0` executed its check. This also means that thread `1` activated itself later than thread `0`. However this means that thread `1` executed the check after thread `0` was already active, hence it detected thread `0` as active.
+**Lemma: If two threads run in parallel than one of the threads detects that the other is active in the 3.1. section. Formally:** 
+
+if the following conditions hold:
+
+1. both thread is active at some point in time
+2. each check under 3.1 is executed before threads become passive
+
+then one of the threads detects that the other thread is active.
+
+Proof:
+ 
+1. Assume that thread `0` did not detect thread `1` as active. 
+2. Due to condition 2. this means that thread `1` activated itself only after thread `0` executed its check. (The other scenario when thread `1` passivated itself before the check is not allowed by condition 2.)
+3. This also means that thread `1` activated itself later than thread `0`. 
+4. However this means that thread `1` executed the check after thread `0` was already active. 
+5. Due to condition 2 thread `1` detected thread `0` as active.
 
 The Select 2 protocol has another feature, namely it is lock free. In order to see what it means, we need to examine the protocol's application:
 
 ### Application protocol ###
+
+MUST BE UPDATED TO REFLECT `wait`
 
 In order to use the protocol to execute critical sections it must be extended in the following way:
 
