@@ -72,7 +72,7 @@ Then the pseudo code is the following:
 **The protocol provides the following feature: Only one thread is selected at any time**
 
 **Definition 1.: Two thread is said to run the selection protocol in parallel, if both thread is active. Formally: 
-thread 0 and 1 run in parallel if active[0] and active[1] holds at some point in time.**
+thread `0` and `1` run in parallel if `active[0] and active[1]` holds at some point in time.**
 
 **Statement 1: If two threads runs the selection protocol in parallel, then only one is selected**.  
 	
