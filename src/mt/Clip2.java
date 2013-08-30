@@ -30,10 +30,15 @@ public class Clip2 extends Debuggable{
 	 * After popping the clipboard is cleaned, waits for another object.
 	 */
 	public Object pop(){
-		if ( select2.execute(pop) ){
-			return pop.getOldVal();
+		try{
+			if ( select2.execute(pop) ){
+				return pop.getOldVal();
+			}
+			else{
+				return null;
+			}
 		}
-		else{
+		catch(Throwable th){
 			return null;
 		}
 	}
@@ -43,13 +48,18 @@ public class Clip2 extends Debuggable{
 	 * After pushing, the clipboard gets full, one must pop before another push.  
 	 */
 	public boolean push(Object newVal){
-		if (newVal == null){
-			throw new NullPointerException();
+		try{
+			if (newVal == null){
+				throw new NullPointerException();
+			}
+			
+			push.setNewVal(newVal);
+			
+			return select2.execute(push);
 		}
-		
-		push.setNewVal(newVal);
-		
-		return select2.execute(push);
+		catch(Throwable th){
+			return false;
+		}
 	}
 	
 	protected Pop pop = new Pop();
@@ -57,23 +67,28 @@ public class Clip2 extends Debuggable{
 	/**
 	 * A clojure that implements pop.
 	 */
-	protected class Pop implements Select2.GuardedClojure{
+	protected class Pop implements Closure{
 		private Object oldVal;
 
 		public Object getOldVal(){
 			return oldVal;
 		}
 		
-		public boolean isLegalState(){
-			return !setable;
-		}
-		
-		public void execute(){
-			oldVal = value;
-			value = null;
-			setable = true;
-			if (g_debug){
-				g_info("popped " + oldVal);
+		public boolean execute(){
+			if (!setable){
+				oldVal = value;
+				value = null;
+				setable = true;
+				if (g_debug){
+					g_info("popped " + oldVal);
+				}
+				return true;
+			}
+			else{
+				if (g_debug){
+					g_info("invalid state: nothing popped");
+				}
+				return false;
 			}
 		}
 	}
@@ -83,7 +98,7 @@ public class Clip2 extends Debuggable{
 	/**
 	 * A clojure that implements push.
 	 */
-	protected class Push implements Select2.GuardedClojure{
+	protected class Push implements Closure{
 		private Object newVal;
 		
 		public Push(){
@@ -93,15 +108,20 @@ public class Clip2 extends Debuggable{
 			this.newVal = newVal;
 		}
 		
-		public boolean isLegalState(){
-			return setable;
-		}
-		
-		public void execute(){
-			value = newVal;
-			setable = false;
-			if (g_debug){
-				g_info("pushed " + newVal);
+		public boolean execute(){
+			if (setable){
+				value = newVal;
+				setable = false;
+				if (g_debug){
+					g_info("pushed " + newVal);
+				}
+				return true;
+			}
+			else{
+				if (g_debug){
+					g_info("invalid state: " + newVal + " not pushed");
+				}			
+				return false;
 			}
 		}
 	}	
@@ -135,14 +155,14 @@ public class Clip2 extends Debuggable{
 		}
 		public void run(){
 			long id = Thread.currentThread().getId();
-			for (int i = 0; i< 5; i++){
+			for (int i = 0; i< 10; i++){
 				
 				System.out.println( "DEBUG-" + id + ":\tpushing... " + id);
 				boolean pushed = clip2.push(id + "");
 				System.out.println( "DEBUG-" + id + ":\tpushing " + id + " successful? " + pushed);
 				Thread.yield();
 				
-				System.out.println( "DEBUG-" + id + ":\tpoping..." );
+				System.out.println( "DEBUG-" + id + ":\tpopping..." );
 				Object popped = clip2.pop();
 				System.out.println( "DEBUG-" + id + ":\tpopping successful? " + (popped != null) + " popped: " + popped);
 				Thread.yield();

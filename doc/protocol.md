@@ -147,6 +147,5 @@ Notes:
 
 * Check the proof in multiprocessor envs
 * Formal verification through code
-* Fix the API
 * Benchmark the API
 * Extend the protocol (ie. handle more threads)
