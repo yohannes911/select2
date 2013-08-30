@@ -132,16 +132,16 @@ The Select 2 protocol in the above manner is lock free and safe:
 
 **Statement 2: Select 2 is safe in the following manner: blocks are never executed in parallel.**
 
-Proof: When blocks are executed in a thread, that thread must be selected. However due to Statement 1, threads are never selected in parallel, hencec blocks are never executed in parallel.
+Proof: When blocks are executed in a thread, that thread must be selected. However due to Statement 1, threads are never selected in parallel, hence blocks are never executed in parallel.
 
-**Statement 3: Select 2 is lock free in the following manner: none of the threads depends on / waits for the business code of the other.**
+**Statement 3: Select 2 is lock free in the following manner: the protocol does not block (depends on / waits for) the business code running in another thread.**
 
-Proof: The Select 2 protocol does not depend on the injected code.
+Proof: The protocol does not have blocking logic except for 3.2, when the token owner waits for the other thread to decide what to do. However if we examine what happens in the other thread during this wait, it turns out that section 3.2. waits only a finite number of steps and these steps does not involve external logic since token owner ship is taken before the injected block is executed.
 
 Notes: 
 
 * The above safety feature guarantees that critical sections are executed atomically or sequentally and never in parallel. However Select 2 does not guarantee that the block will be ever executed. It only guarantees that if it is executed than no other block is executed in parallel.
-* Lock free (in the above manner) does not mean that the business code running in one thread cannot block the other thread. There could be situations when the scheduler does not let other threads run before the business code exits.
+* Lock free (in the above manner) does not mean that the business code running in one thread cannot block the other thread. There could be situations when the scheduler does not let other threads run before the business code exits. Select 2 only guarantees that its selection (or synchronization) logic does not depend on external, injected logic.
 
 ### TODO ###
 
@@ -149,3 +149,4 @@ Notes:
 * Formal verification through code
 * Fix the API
 * Benchmark the API
+* Extend the protocol (ie. handle more threads)
