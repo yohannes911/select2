@@ -20,6 +20,8 @@ public class DebugSelect2{
 	}
 	
 	protected static void runRandom(int rounds, int actLen){
+		int oneRoundLen = (Select2.Step.values().length / 2);
+		oneRoundLen *= oneRoundLen;
 		for (int r=0;r<rounds;r++){
 			Select2Thread[] threads = new Select2Thread[2];
 			
@@ -28,11 +30,15 @@ public class DebugSelect2{
 			}	
 			
 			Random random = new Random();
-			int[] actors = new int[actLen];
+			int[] actors = new int[2*actLen];
+			int actor = 0;
 			for (int i=0;i<actLen;i++){
-				actors[i] = random.nextInt(2);
+				actor = random.nextInt(2);
+				actors[2*i] = actor;
+				actors[2*i+1] = actor;
 			}
-			Select2 select2 = new Select2(threads, new Scenario(actLen, actors));
+			
+			Select2 select2 = new Select2(threads, new Scenario(oneRoundLen, actors));
 			
 			for (int i = 0; i<2 ;i++){
 				threads[i].setSelect2(select2);
@@ -47,6 +53,7 @@ public class DebugSelect2{
 			
 			System.out.println();
 		}
+		System.out.println("Executed " + rounds + " test cycles, " + oneRoundLen + " rounds in each");
 	}
 	
 	protected static void runManual(int rounds, String actors){

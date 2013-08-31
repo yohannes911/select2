@@ -81,32 +81,19 @@ public abstract class Debuggable{
 	}
 
 	/**
-	 * Marks that a thread wants to start a new step. Returns the current step number.
+	 * Marks that a thread wants to start a new step (kinda break point).
 	 */
-	protected int g_start_step(Object step){
+	protected void g_step(Object step){
 		int tid = getInternalThreadId();
 		while(true){
 			if (tid == g_actors[g_step]){ break; }
 			if (g_finished[(tid+1) % 2]){ break; }
 			Thread.yield();
 		}
-		g_start_step_info(step);
-		return g_step;
-	}
-	
-	/**
-	 * Marks that a thread finished its step. 
-	 * This variant is used when the step has nested statements (ifelse, while, etc.)
-	 */
-	protected void g_finish_step(int step){
-		if (step == g_step){
-			g_step = (g_step + 1) % g_actors.length;
-		}
-	}
-	protected void g_finish_step(){
+		g_step_info(step);
 		g_step = (g_step + 1) % g_actors.length;
 	}
-
+	
 	// experimental
 	protected void g_new_round_info(){
 		g_info("new round");
@@ -116,8 +103,8 @@ public abstract class Debuggable{
 		g_info("rounds finished");
 	}
 	
-	protected void g_start_step_info(Object step){
-		g_info("started " + step);
+	protected void g_step_info(Object step){
+		g_info(step);
 	}
 	
 	protected void g_info(Object msg){
