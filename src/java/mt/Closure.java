@@ -8,5 +8,5 @@ public interface Closure{
 	/**
 	 * The method the closure encapsulates.
 	 */
-	public boolean execute() throws Throwable;
+	public boolean execute();
 }

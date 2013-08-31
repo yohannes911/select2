@@ -5,7 +5,7 @@ import java.util.Random;
 /**
  * A clipboard object threads can share objects through.
  */
-public class Clip2 extends Debuggable{
+public class Clip2{
 	private volatile Select2 select2;
 	private volatile boolean setable;
 	
@@ -18,15 +18,7 @@ public class Clip2 extends Debuggable{
 		select2 = new Select2(threads);
 		setable = true;
 	}
-	
-	/**
-	 * Besides threads, one can configure debug as well.
-	 */
-	public Clip2(Thread[] threads, boolean debug){
-		this(threads);
-		g_debug = debug;
-	}
-	
+		
 	/**
 	 * Pops the object from the clipboard if any. 
 	 * After popping the clipboard is cleaned, waits for another object, one must push before another pop.
@@ -34,21 +26,12 @@ public class Clip2 extends Debuggable{
 	 */
 	public Object pop(){
 		if (!setable){
-			try{
-				if ( select2.execute(pop) ){
-					return pop.getValue();
-				}
-				else{
-					return null;
-				}
+			if ( select2.execute(pop) ){
+				return pop.getValue();
 			}
-			catch(Throwable th){
-				return null;
-			}
+			else{ return null; }
 		}
-		else{
-			return null;
-		}
+		else{ return null; }
 	}
 	
 	/**
@@ -58,22 +41,15 @@ public class Clip2 extends Debuggable{
 	 */
 	public boolean push(Object newVal){
 		if (setable){
-			try{
-				if (newVal == null){
-					throw new NullPointerException();
-				}
-				
-				push.setValue(newVal);
-				
-				return select2.execute(push);
+			if (newVal == null){
+				throw new NullPointerException();
 			}
-			catch(Throwable th){
-				return false;
-			}
+			
+			push.setValue(newVal);
+			
+			return select2.execute(push);
 		}
-		else{
-			return false;
-		}
+		else{ return false; }
 	}
 	
 	protected Pop pop = new Pop();
@@ -96,15 +72,9 @@ public class Clip2 extends Debuggable{
 				_value = value;
 				value = null;
 				setable = true;
-				if (g_debug){
-					g_info("popped " + _value);
-				}
 				return true;
 			}
 			else{
-				if (g_debug){
-					g_info("invalid state: nothing popped");
-				}
 				return false;
 			}
 		}
@@ -129,15 +99,9 @@ public class Clip2 extends Debuggable{
 			if (setable){
 				value = _value;
 				setable = false;
-				if (g_debug){
-					g_info("pushed " + _value);
-				}
 				return true;
 			}
 			else{
-				if (g_debug){
-					g_info("invalid state: " + _value + " not pushed");
-				}			
 				return false;
 			}
 		}
@@ -150,10 +114,11 @@ public class Clip2 extends Debuggable{
 	public static void main(String[] args){
 		Clip2Thread[] threads = new Clip2Thread[2];
 		
-		threads[0] = new Clip2Thread(true);
-		threads[1] = new Clip2Thread(false);
+		int rounds = args.length == 0 ? 10 : Integer.parseInt( args[0] );
+		threads[0] = new Clip2Thread(rounds, true);
+		threads[1] = new Clip2Thread(rounds, false);
 		
-		Clip2 clip2 = new Clip2(threads, true);
+		Clip2 clip2 = new Clip2(threads);
 		
 		for (int i = 0; i<2 ;i++){
 			threads[i].setClip2(clip2);
@@ -168,8 +133,10 @@ public class Clip2 extends Debuggable{
 		private boolean push;
 		private Clip2 clip2;
 		private Random random;
+		private int rounds;
 		
-		public Clip2Thread(boolean push){
+		public Clip2Thread(int rounds, boolean push){
+			this.rounds = rounds;
 			this.push = push;
 			if (push){
 				random = new Random();
@@ -181,18 +148,26 @@ public class Clip2 extends Debuggable{
 		public void run(){
 			long id = Thread.currentThread().getId();
 			int val;
-			for (int i = 0; i< 10; i++){
+			for (int i = 0; i< rounds; i++){
 				if (push){
 					val = 1 + random.nextInt(100);
-					System.out.println( "DEBUG-" + id + ":\tpushing... " + val);
 					boolean pushed = clip2.push(val + "");
-					System.out.println( "DEBUG-" + id + ":\tpushing " + val + " successful? " + pushed);
+					if (pushed){
+						System.out.println( "DEBUG: THREAD-" + id + ":\tPUSHED\t" + val );
+					}
+					else{
+						System.out.println( "DEBUG: THREAD-" + id + ":\tNOT_PUSHED\t" + val );
+					}
 					Thread.yield();
 				}
 				else{
-					System.out.println( "DEBUG-" + id + ":\tpopping..." );
 					Object popped = clip2.pop();
-					System.out.println( "DEBUG-" + id + ":\tpopping successful? " + (popped != null) + " popped: " + popped);
+					if (popped != null){
+						System.out.println( "DEBUG: THREAD-" + id + ":\tPOPPED\t" + popped);
+					}
+					else{
+						System.out.println( "DEBUG: THREAD-" + id + ":\tNOT_POPPED");
+					}
 					Thread.yield();
 				}
 			}

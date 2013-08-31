@@ -8,12 +8,14 @@ public class DebugSelect2{
 	public static void main(String args[]){
 		if (args[0].equals("-r")){
 			int cycles = Integer.parseInt(args[1]);
-			int actLen = Integer.parseInt(args[2]);
-			runRandom(cycles, actLen);
+			int rounds = args.length == 3 ? ROUNDS : Integer.parseInt(args[2]);
+			int actLen = args.length == 3 ? Integer.parseInt(args[2]) : Integer.parseInt(args[3]);
+			runRandom(cycles, rounds, actLen);
 		}
 		else if (args[0].equals("-a")){
-			int actLen = Integer.parseInt(args[1]);
-			runAll(actLen);
+			int rounds = args.length == 2 ? ROUNDS : Integer.parseInt(args[1]);
+			int actLen = args.length == 2 ? Integer.parseInt(args[1]) : Integer.parseInt(args[2]);
+			runAll(rounds, actLen);
 		}
 		else{
 			int rounds = Integer.parseInt(args[0]);
@@ -21,7 +23,7 @@ public class DebugSelect2{
 		}
 	}
 	
-	private static void runRandom(int cycles, int actLen){
+	private static void runRandom(int cycles, int rounds, int actLen){
 		int selectCount = 0;
 		for (int c=0;c<cycles;c++){
 			Select2Thread[] threads = new Select2Thread[2];
@@ -30,7 +32,7 @@ public class DebugSelect2{
 				threads[i] = new Select2Thread();
 			}	
 			
-			Select2 select2 = new Select2(threads, Scenario2.random(ROUNDS, actLen));
+			Select2 select2 = new Select2(threads, Scenario2.random(rounds, actLen));
 			
 			for (int i = 0; i<2 ;i++){
 				threads[i].setSelect2(select2);
@@ -46,14 +48,14 @@ public class DebugSelect2{
 			
 			System.out.println();
 		}
-		System.out.println("Executed " + cycles + " test cycles with " + actLen + " scenario length in each cycle.");
+		System.out.println("Executed " + cycles + " random scenarios of " + actLen + " length with " + rounds + " rounds in each cycle.");
 		System.out.println("During the test " + selectCount + " selection was made by the Select 2 protocol.");
 	}
 	
-	private static void runAll(int actLen){
+	private static void runAll(int rounds, int actLen){
 		int selectCount = 0;
 		int scenarioCount = 0;
-		Scenario2 allScenarios = new Scenario2(ROUNDS, actLen);
+		Scenario2 allScenarios = new Scenario2(rounds, actLen);
 		
 		for (Scenario scenario : allScenarios){
 			scenarioCount++;
@@ -80,7 +82,7 @@ public class DebugSelect2{
 			
 			System.out.println();
 		}
-		System.out.println("Executed all " + scenarioCount + " possible scenarios of " + actLen + " length.");
+		System.out.println("Executed all " + scenarioCount + " possible scenarios of " + actLen + " length with " + rounds + " rounds in each cycle.");
 		System.out.println("During the test " + selectCount + " selection was made by the Select 2 protocol.");
 	}
 	
