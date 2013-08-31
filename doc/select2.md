@@ -1,10 +1,12 @@
-Protocol
+Select 2
 ===============================================================================
 
 
-Select 2
+Summary
 -------------------------------------------------------------------------------
 
+### Protocol ###
+ 
 The Select 2 protocol is a wait-free synchronization primitive. It can select one and only one thread from two threads. It can be applied to safely execute critical sections. It has the following features:
 
 **This selection protocol provides the following guaratees**:
@@ -17,7 +19,27 @@ The Select 2 protocol is a wait-free synchronization primitive. It can select on
 * **safe**: one and only one code is executed at any time (ie. does not occur parallel execution)
 * **wait-free**: each thread depends only on its code and does not depend on the other thread, hence iff the the threads own code is wait-free then the whole thread will eventually terminate
 
+### Implementation ###
+
+The (application) protocol is implemented in both **Java** and **Scala**. 
+
+**Both API builds upon the Java-builtin primitive: `volatile`. Otherwise it does not use anything else, neither `synchronization` nor `atomic` values.**
+
+I'm not sure whether the API is of any interest, but here are some thoughts:
+
+* **Soft synchronization primitive**: I'm not a system/JVM engineer hence I'm not sure, just guess that the API doesn't builds upon hardware support (ie. CAS). Someone should verify this:-)
+* **Java 1.4 and-- support**: As far as I see the API could be extended to work with earlier Java versions prior to 1.5.
+* **Promising benchmarks**: The early benchmark results are promising:-) (see details below).
+
+### Status ###
+
+The protocol (in theory) and the API in its infancy. Both the proof and the API requires external revision.
+
+Protocol
+-------------------------------------------------------------------------------
+
 ### Datums ###
+
 
 Threads are numbered as `0` and `1` in the protocol.
 
@@ -181,7 +203,45 @@ Notes:
 * The above safety feature guarantees that critical sections are executed atomically or sequentally and never in parallel. However Select 2 does not guarantee that the block will be ever executed. It only guarantees that if it is executed than no other block is executed in parallel.
 * Independency does not mean that the business code running in one thread cannot block the other thread. There could be situations when the scheduler does not let other threads run before the business code exits. 
 
-### TODO ###
+Implementation
+-------------------------------------------------------------------------------
+
+### Langs ###
+
+The protocol is currently implemented in Java and Scala. See `src/java` and `src/scala`. The code builds upon the Java-builtin synchronization primitive: `volatile` and nothing more. 
+
+Note that the above means that the API (with some possible modifications) might be used for prior versions of Java 1.5. Some modifications might be necessary since the behavious of `volatile` changed in Java 1.5.
+
+### Code quality ###
+
+The API is experimental, the Java API is more extensively tested then the Scala one.
+
+### Empirical evidence ###
+
+There are some empirical evidences that the Java API works, not just the above formal proof. The `src/java/debug` package implements a debugable version of the API. With this I've tested thousands of concurent scenarios w/o failure. Of course this doesn't replace the formal proof.
+
+### Benchmark ###
+
+A microbenchmark is implemented for the Java version. See `src/java/bench`.
+
+The Select 2 service was reimplemented based upon the Java-builtin synchronization primitive: `compare and set`. That is to say this code implements the above features but using a different algorithm and different primitive (ie. `AtomicInteger`).
+
+The microbenchmark compares the two implementations. In my machine the custom, `volatile` based implementation runs 2-3x faster then the `CAS` based one. Of course this is an orange-apple comparision, since the Select protocol (in its current form) deals with only 2 threads. Still the benchmark shows that the API might perform well and even better than the Java builtin at least for small number of threads.
+
+### Demo ###
+
+Both the Java and the Scala API provides a simplified **Clipboard** implementation for demo purposes - see the `Clip2` class. This provides the following features:
+
+* one can `push` an object to the clipboard which then 
+* can be `popped`
+
+The clipboard follows the following (synchronization) protocol:
+
+* after `pushing` and object no more object can be `pushed` till the current one is `popped`
+* also if an object is `popped` then no more object could be `popped` until a new one is `pushed` onto the clipboard
+
+TODO
+-------------------------------------------------------------------------------
 
 **Select 2**
 
@@ -189,10 +249,11 @@ Notes:
   * according to lemma changes
   * clarify this: token owner has two meaning: `token == i` at any time and `token_owner is true` - the two might not be the same  
 * Check the proof in multiprocessor envs
-* Some practical verification through testing
-* Benchmark the API against built in primitives (ie. CaS)
+* Someone should revise the proof and the APIs:-)
+* More testing and benchmarking
+* More demos
 
 **Extensions**
 
 * Handle more threads
-* Handle other primitives, such as: increment/decrement, ring buffer
+* Implement other primitives in the 'Select-style', such as: increment/decrement, ring buffer
