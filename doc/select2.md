@@ -1,4 +1,4 @@
-Select 2
+select2 synchronization primitve
 ===============================================================================
 
 
@@ -7,35 +7,35 @@ Summary
 
 ### Protocol ###
  
-The Select 2 protocol is a wait-free synchronization primitive. It can select one and only one thread from two threads. It can be applied to safely execute critical sections. It has the following features:
-
-**The core selection protocol provides the following guaratees**:
+**`select2` is a wait-free synchronization primitive, that selects one and only one thread from 2 threads** (thats why it is called `select2`). The core protocol provides the following guarantees:
 
 * **safe**: one and only one thread is selected at any time
 * **wait-free**: the selection protocol eventually terminates (ie. in finite steps)
 
-**The application protocol provides similar guarantees, it can be used to execute critical sections with the following guarantees**:
+**The primitive can be used to safely execute critical sections.** The application protocol provides similar guarantees as the core one: it can be used to execute critical sections with the following guarantees:
 
 * **safe**: one and only one code is executed at any time (ie. does not occur parallel execution)
-* **wait-free**: each thread depends only on its code and does not depend on the other thread, hence iff the the threads own code is wait-free then the whole thread will eventually terminate
+* **wait-free**: if the code injected to the thread is wait-free then the whole thread is wait-free, will eventually terminate
 
 ### Implementation ###
 
-The application protocol is implemented in both **Java** and **Scala**. 
+The application protocol is **implemented in both Java and Scala.** 
 
-**Both API builds upon the Java-builtin primitive: `volatile`. Otherwise it does not use anything else, neither `synchronization` nor `atomic` values.**
+**Both API builds upon the Java-builtin primitive: `volatile`.** Otherwise it does not use anything else, especially **it does not use either `synchronization` or `atomic values`**.
 
 I'm not sure whether the API is of any interest, but here are some thoughts:
 
-* **Soft synchronization primitive**: I'm not a system/JVM engineer hence I'm not sure, just guess that the API doesn't build upon hardware support (ie. CAS). Someone should verify this:-)
-* **Java 1.4 and-- support**: As far as I see the API could be extended to work with earlier Java versions prior to 1.5.
-* **Promising benchmarks**: The early benchmark results are promising:-) (see details below).
+* *Soft synchronization primitive*: I'm not a system/JVM engineer hence I'm not sure, just guess that the API doesn't build upon hardware support (ie. CAS). Someone should verify this:-)
+* *Java 1.4- support*: As far as I see the API could be extended to work with earlier Java versions prior to 1.5.
+* *Promising benchmarks*: The early benchmark results are promising:-) (see details below).
 
 ### Status ###
 
-The protocol (in theory) and the API in its infancy. Both the proof and the API requires external revision.
+Both the theoretical protocol and the API is in its **infancy**. As of this writing it is 3 days old:-)
 
-Protocol
+Both of them requires **external revisions**. Any feedback is greatly appriciated:-)
+
+Protocol specification
 -------------------------------------------------------------------------------
 
 ### Datums ###
@@ -50,13 +50,11 @@ The protocol uses the following fields:
 * `selected: boolean[2]` - marks whether thread `0` or `1` is selected
 * `wait: boolean[2]` - marks whether thread `0` or `1` is waiting
 
-### Protocol ###
+### Core protocol ###
 
-Assume that thread `i` enters the selection (`i = 0 or 1`). 
+_Note that `i + 1` means `(i+1) % 2` in the following sections._
 
-_Note that `i + 1` means `(i+1) % 2` in the following code._
-
-Then the pseudo code is the following:
+Assume that thread `i` enters the selection (`i = 0 or 1`). Then the pseudo code of the protocol is the following:
 
 -- 1. mark myself as active
 
@@ -70,14 +68,14 @@ Then the pseudo code is the following:
 
     if active[i + 1]
 
--- -- 3.1. if I am not the token owner, wake up token owner, cleanup and exit
+-- -- 3.1. if I am not the token owner, wake the owner up, cleanup and exit
 
        if !token_owner 
            wait[i+1] = false
            active[i] = false
            return false
 
--- -- 3.2. if I am the token owner wait for the other thread till it decides what to do 
+-- -- 3.2. if I am the token owner, wait till either the other thread changes its state or I am waked up
        
        else 
 		  wait[i] = true
@@ -85,7 +83,7 @@ Then the pseudo code is the following:
              yield
           wait[i] = false
 
--- 4. now different cases could happen
+-- 4. finish the protocol, where different cases could happen
 
 -- 4.1. if I was the token owner but the other thread took the ownership so far, then I am not selected, cleanup and exit
 
@@ -111,9 +109,9 @@ Then the pseudo code is the following:
           active[i] = false
           return true
 
-### Features ###
+### Core features ###
 
-**Statement 1: Select 2 is safe in the following manner: the protocol guarantees that one and only one thread is selected at any time. Formally:  `not selected[0] or not selected[1]` always holds.**
+**Statement 1: `select2` is safe in the following manner: the protocol guarantees that one and only one thread is selected at any time. Formally:  `not selected[0] or not selected[1]` always holds.**
 	
 Proof: Indirectly assume, that at some point in time both thread is selected. There are 3 possible cases:
 
@@ -159,7 +157,7 @@ Proof:
 
 The Select 2 protocol has another feature, namely it is lock free. In order to see what it means, we need to examine the protocol's application:
 
-**Statement 2: Select 2 is wait-free in: each thread that entered the protocol terminates in finite steps**
+**Statement 2: `select2` is wait-free in the following manner: each thread that entered the selection protocol terminates in finite steps**
 
 Proof: Only the token owner has a conditional wait in section 3.2., a thread who does not own the token obviously terminates in finite steps.
 
@@ -184,37 +182,33 @@ During the selection period (while the thread is selected) the thread can execut
 
 The extended Select 2 protocol is safe and wait-free in the following manner:
 
-**Statement 3: The extended Select 2 protocol is safe in the following manner: blocks are never executed in parallel.**
+### Application protocol features ###
+
+**Statement 3: The `select2` application protocol is safe in the following manner: blocks are never executed in parallel.**
 
 Proof: When blocks are executed in a thread, that thread must be selected. However due to Statement 1, threads are never selected in parallel, hence blocks are never executed in parallel.
 
-**Statement 4: The extended Select 2 protocol is wait-free in the following manner:**
+Note that this safety feature just guarantees that critical sections are executed atomically / sequentally and never in parallel. However it does not guarantee that the block will be ever executed. This is where `Select 2` differs from the `synhronization` primitive. Both are safe, however while `synhronization` blocks until execution, `Select 2` neither blocks nor does it guarentee execution. 
 
-1. **The execution of one thread does not depend on (wait for) the execution of the other thread.**
-1. **If the injected block is wait-free then the whole Select 2 system is wait-free as well.**
+**Statement 4: The `select2` application protocol is wait-free in the following manner. If the block injected to the thread is wait-free then the whole thread will be wait-free as well. In other words: if the thread gets enough processor time then it will eventually terminate.**
 
 Proof: 
 
-1. Select 2 logic does not depend on the injected block.
-2. According to Statement 2 above Select 2 itself is wait-free. Hence if the business logic is wait-free as well, then the whole is wait-free, too.
+Select 2 logic does not depend on the injected code block of either thread and according to Statement 2 the protocol itself is wait-free. Hence if the injected block is wait-free as well, then the whole thread becomes wait-free, too.
 
-Notes: 
-
-* The above safety feature guarantees that critical sections are executed atomically or sequentally and never in parallel. However Select 2 does not guarantee that the block will be ever executed. It only guarantees that if it is executed than no other block is executed in parallel.
-* Independency does not mean that the business code running in one thread cannot block the other thread. There could be situations when the scheduler does not let other threads run before the business code exits. 
 
 Implementation
 -------------------------------------------------------------------------------
 
-### Langs ###
+### Platforms ###
 
-The protocol is currently implemented in Java and Scala. See `src/java` and `src/scala`. The code builds upon the Java-builtin synchronization primitive: `volatile` and nothing more. 
+The protocol is currently implemented in Java and Scala. See `src/java` and `src/scala`. The code builds upon the Java-builtin synchronization primitive: `volatile` and nothing else. Especially it does not use either `synchronization` or `atomic values`.
 
 Note that the above means that the API (with some possible modifications) might be used for earlier versions of Java prior to 1.5. Some modifications might be necessary since the behaviour of `volatile` changed in Java 1.5.
 
 ### Code quality ###
 
-The API is experimental, the Java API is more extensively tested then the Scala one.
+The API is experimental. Especially the Java API is more extensively tested then the Scala one.
 
 ### Empirical evidence ###
 
@@ -224,13 +218,15 @@ There are some empirical evidences that the Java API works, not just the above f
 
 A microbenchmark is implemented for the Java version. See `src/java/bench`.
 
-The Select 2 service was reimplemented based upon the Java-builtin synchronization primitive: `compare and set`. That is to say this code implements the above features but using a different algorithm and different primitive (ie. `AtomicInteger`).
+The `select2` application service was reimplemented based upon the Java-builtin synchronization primitive: `compare and set`. That is to say this code implements the above features but using a different algorithm and a different primitive (ie. `AtomicInteger`).
 
-The microbenchmark compares the two implementations. In my machine the custom, `volatile` based implementation runs 2-3x faster then the `CAS` based one. Of course this is an orange-apple comparision, since the Select protocol (in its current form) deals with only 2 threads. Still the benchmark shows that the API might perform well and even better than the Java builtin at least for small number of threads.
+The microbenchmark compares the custom `volatile` based implementation and the `CAS` based one. The early results are promising:
+
+In my machine the custom, `volatile` based implementation runs 2-3x faster then the `CAS` one. Of course this is an orange-apple comparision, since the `select` protocol (in its current form) deals with only 2 threads. Still the benchmark shows that the API might perform well and even better than the Java builtin at least for small number of threads.
 
 ### Demo ###
 
-Both the Java and the Scala API provides a simplified **Clipboard** implementation for demo purposes - see the `Clip2` class. This provides the following features:
+Both the Java and the Scala API provides a simplified clipboard implementation for demo purposes - see the `Clip2` class. This provides the following features:
 
 * one can `push` an object to the clipboard which then 
 * can be `popped`
@@ -240,20 +236,29 @@ The clipboard follows the following (synchronization) protocol:
 * after `pushing` and object no more object can be `pushed` till the current one is `popped`
 * also if an object is `popped` then no more object could be `popped` until a new one is `pushed` onto the clipboard
 
+Since it is a demo of the `select2` protocol it handles only 2 threads and not more.
+
 TODO
 -------------------------------------------------------------------------------
 
-**Select 2**
+The most important one: 
 
-* Revise the proof of Statement 1
+**External revisions are necessary both for the proof and the API. Any feedback is highly appreciated! :-)**
+
+### Protocol ###
+
+* Revise the proof of Statement 1:
   * according to lemma changes
-  * clarify this: token owner has two meaning: `token == i` at any time and `token_owner is true` - the two might not be the same  
-* Check the proof in multiprocessor envs
-* Someone should revise the proof and the APIs:-)
-* More testing and benchmarking
+  * clarify this: token owner has two meanings: `token == i` at any time and `token_owner is true` - the two might not be the same  
+* Revise the proof assuming multiprocessor env
+
+### API ###
+
+* More testing and 
+benchmarking
 * More demos
 
-**Extensions**
+### Extensions ###
 
 * Handle more threads
 * Implement other primitives in the 'Select-style', such as: increment/decrement, ring buffer
