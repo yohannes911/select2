@@ -1,4 +1,4 @@
-package mt{
+package select2{
 	class Select2(threadIds: Array[Long]){
 		@volatile
 		private var active = new Array[Boolean](2)

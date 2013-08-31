@@ -1,4 +1,4 @@
-package mt.bench;
+package select2.bench;
 
 import java.util.concurrent.atomic.AtomicInteger;
 

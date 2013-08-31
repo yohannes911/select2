@@ -1,4 +1,4 @@
-package mt.debug;
+package select2.debug;
 
 public class DebugSelect2{
 

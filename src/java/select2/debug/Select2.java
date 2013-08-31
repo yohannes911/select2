@@ -1,4 +1,4 @@
-package mt.debug;
+package select2.debug;
 
 /**
  * Select 2 protocol implementation, building upon the Java-builtin synchronization primitive: volatile.

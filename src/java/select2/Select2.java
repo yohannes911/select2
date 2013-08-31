@@ -1,4 +1,4 @@
-package mt;
+package select2;
 
 /**
  * Select 2 protocol implementation, building upon the Java-builtin synchronization primitive: volatile.

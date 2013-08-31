@@ -1,4 +1,4 @@
-package mt.debug;
+package select2.debug;
 
 /**
  * Represents a test scenario entity. Each scenario consists of:

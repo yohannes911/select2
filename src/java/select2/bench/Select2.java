@@ -1,4 +1,4 @@
-package mt.bench;
+package select2.bench;
 
 /**
  * Select 2 protocol implementation, building upon the Java-builtin synchronization primitive: volatile.

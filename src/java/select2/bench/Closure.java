@@ -1,4 +1,4 @@
-package mt;
+package select2.bench;
 
 /**
  * Represents a closure that can be executed. Typically it is implemented as an anonymous class within the business class.

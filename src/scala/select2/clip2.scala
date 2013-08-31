@@ -1,4 +1,4 @@
-package mt{
+package select2{
 
 	class Clip2(threadIds: Array[Long]){
 		@volatile

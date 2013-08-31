@@ -1,4 +1,4 @@
-package mt.bench;
+package select2.bench;
 
 /**
  * Represents Select 2 'abstract' features. Does two things: convert 

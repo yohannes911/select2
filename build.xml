@@ -34,7 +34,7 @@
 		
 		<!-- copy docs -->
 		<copy file="README.md" todir="${dist}"/>
-		<copy file="doc/protocol.md" todir="${dist}/doc"/>
+		<copy file="doc/select2.md" todir="${dist}/doc"/>
 	</target>
 		
 	<target name="jar">
