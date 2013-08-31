@@ -5,15 +5,17 @@ Protocol
 Select 2
 -------------------------------------------------------------------------------
 
-The Select 2 protocol is a wait-free protocol that can select one and only one thread from two threads.
+The Select 2 protocol is a wait-free synchronization primitive. It can select one and only one thread from two threads. It can be applied to safely execute critical sections. It has the following features:
 
-This synchronization primitive provides the following guaratee:
+**This selection protocol provides the following guaratees**:
 
-**Select 2 guarantees that only one thread is selected at any time**
+* **safe**: one and only one thread is selected at any time
+* **wait-free**: the selection protocol eventually terminates (ie. in finite steps)
 
-This synchroinzation primitive can be used to execute critical sections:
+**Its application provides similar guarantees, it can be used to execute critical sections with the following guarantees**:
 
-**Select 2 can be used to execute critical sections atomatically, in a wait-free manner.**
+* **safe**: one and only one code is executed at any time (ie. does not occur parallel execution)
+* **wait-free**: each thread depends only on its code and does not depend on the other thread, hence iff the the threads own code is wait-free then the whole thread will eventually terminate
 
 ### Datums ###
 
@@ -89,8 +91,6 @@ Then the pseudo code is the following:
 
 ### Features ###
 
-PROOF MUST BE REVISED DUE TO THE CHANGES OF THE Lemma
-
 **Statement 1: Select 2 is safe in the following manner: the protocol guarantees that one and only one thread is selected at any time. Formally:  `not selected[0] or not selected[1]` always holds.**
 	
 Proof: Indirectly assume, that at some point in time both thread is selected. There are 3 possible cases:
@@ -146,21 +146,21 @@ Assume that thread `0` is a token owner and it entered the conditional wait in s
 1. The next loop cycle comes before thread `1` becomes active again. Since the loop checks if the other thread is passive, it will exit in the next cycle (because `active[0]` becomes false).
 2. It is also possible that thread `1` becomes active again between two loop cycles. In this case there are two possible scenarios:
    1. Thread `1` exited the previous selection w/o taking the token. In this case it will wake up thread `0` in section 3.1, in finite steps, hence the loop exits (because `wait[0]` becomes false).
-   1. Thread `1` exited the previous selection by taking the token, ie. it became the new token owner. Since token ownership won't change until thread `0` is in the wait loop and the loop checks if the token ownership changed, the loop will exit in the next cycle (because `token == 0` becomes false).
+   1. Thread `1` exited the previous selection by taking the token, ie. it became the new token owner. Since neither thread would change token ownership again until thread `0` is in the wait loop and the loop itself checks whether the token ownership changed, the loop will exit in the next cycle (because `token == 0` becomes false).
 
 ### Application protocol ###
 
-In order to use the protocol to execute critical sections it must be extended in the following way:
+In order to use the protocol to execute critical sections it must be extended in some way. The extended protocol works like this:
 
-During the selection period (while the thread is selected) the thread can execute some injected code (closures or kinda). The pseudo code is the following:
+During the selection period (while the thread is selected) the thread can execute some injected code (closure or kinda). The pseudo code is the following:
 
     selected[i] = true
-    block()
+    block
     selected[i] = false
 
 , where `block` is a black box function (closure or such) injected into the selection protocol.
 
-The Select 2 protocol in the above manner is lock free and safe:
+The extended Select 2 protocol is safe and wait-free in the following manner:
 
 **Statement 3: The extended Select 2 protocol is safe in the following manner: blocks are never executed in parallel.**
 
@@ -183,8 +183,16 @@ Notes:
 
 ### TODO ###
 
-* Revise the proof according to lemma changes
+**Select 2**
+
+* Revise the proof of Statement 1
+  * according to lemma changes
+  * clarify this: token owner has two meaning: `token == i` at any time and `token_owner is true` - the two might not be the same  
 * Check the proof in multiprocessor envs
-* Formal verification through code
-* Benchmark the API
-* Extend the protocol (ie. handle more threads)
+* Some practical verification through testing
+* Benchmark the API against built in primitives (ie. CaS)
+
+**Extensions**
+
+* Handle more threads
+* Handle other primitives, such as: increment/decrement, ring buffer

@@ -73,9 +73,6 @@ package mt{
 		def clip2 = _clip2
 		def clip2_= (clip2: Clip2): Unit = _clip2 = clip2
 		
-		private var _age = 0 
-		def age_= (value:Int):Unit = _age = value 
-		
 		override def run(){
 			val id = Thread.currentThread().getId()
 			var randomValue = 0
