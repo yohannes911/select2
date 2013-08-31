@@ -1,8 +1,7 @@
 package select2{
 
 	class Clip2(threadIds: Array[Long]){
-		@volatile
-		private var select2: Select2 = Select2(threadIds)
+		private val select2: Select2 = Select2(threadIds)
 
 		@volatile
 		private var setable: Boolean = true
@@ -53,8 +52,11 @@ package select2{
 		}
 		
 		def main(args: Array[String]) {		
-			val threads: Array[Clip2Thread] = Array( new Clip2Thread(true), new Clip2Thread(false) )
-		
+			val rounds: Integer = args.length match{
+				case 0 => 10
+				case _ => Integer.parseInt(args(0))
+			}
+			val threads: Array[Clip2Thread] = Array( new Clip2Thread(rounds, true), new Clip2Thread(rounds, false) )
 			val clip2 = Clip2(threads)
 		
 			for (i <- 0 to 1){
@@ -66,7 +68,7 @@ package select2{
 	
 	import java.util.Random
 		
-	class Clip2Thread(push: Boolean) extends Thread{
+	class Clip2Thread(rounds: Integer, push: Boolean) extends Thread{
 		private var _clip2: Clip2 = null
 		private val random = new Random()
 		
@@ -78,31 +80,23 @@ package select2{
 			var randomValue = 0
 			var pushed = false
 			var popped: Option[Any] = None
-			for (i <- 1 to 10){
+			for (i <- 1 to rounds){
 				if (push){
 					randomValue = 1 + random.nextInt(100)
-					println( "DEBUG-" + id + ":\tpushing... " + randomValue)
 					if ( _clip2.push(randomValue + "") ){
-						println( "DEBUG-" + id + ":\tpushed " + randomValue)
+						println( "DEBUG: THREAD-" + id + ":\tPUSHED\t" + randomValue)
 					}
 					else{
-						println( "DEBUG-" + id + ":\tcouldn't push " + randomValue)					
+						println( "DEBUG: THREAD-" + id + ":\tNOT_PUSHED\t" + randomValue)					
 					}
-					Thread.sleep(randomValue)
 					Thread.`yield`()
 				}
 				else{
-					println( "DEBUG-" + id + ":\tpopping..." )
 					popped = _clip2.pop()
 					popped match{
-						case Some(value) => println( "DEBUG-" + id + ":\tpopped " + value)
-						case _ => println( "DEBUG-" + id + ":\tcouldn't pop")
+						case Some(value) => println( "DEBUG: THREAD-" + id + ":\tPOPPED\t" + value)
+						case _ => println( "DEBUG: THREAD-" + id + ":\tNOT_POPPED")
 					}
-					val poppedValue = popped match{
-						case Some(value) => Integer.parseInt( value.asInstanceOf[String] )
-						case _ => 0
-					}					
-					Thread.sleep(poppedValue)
 					Thread.`yield`()
 				}
 			}

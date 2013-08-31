@@ -6,7 +6,7 @@ import java.util.Random;
  * A clipboard object threads can share objects through.
  */
 public class Clip2{
-	private volatile Select2 select2;
+	private final Select2 select2;
 	private volatile boolean setable;
 	
 	private volatile Object value;
