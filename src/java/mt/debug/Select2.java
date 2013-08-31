@@ -80,7 +80,7 @@ public class Select2 extends Debuggable{
 				wait[i] = true;
 				while ( true ){
 					if (g_debug){ g_start_step(Step.WAIT_CONDITION); }
-					if (token == i && active[(i + 1) % 2] && wait[i]){ break; }
+					if (token != i || !active[(i + 1) % 2] || !wait[i]){ break; }
 					if (g_debug){ g_finish_step(); }
 					Thread.yield();
 				}

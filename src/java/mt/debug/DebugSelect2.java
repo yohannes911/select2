@@ -38,6 +38,12 @@ public class DebugSelect2{
 				threads[i].setSelect2(select2);
 				threads[i].start();
 			}	
+			for (int i = 0; i<2 ;i++){
+				try{
+					threads[i].join();
+				}
+				catch(Throwable ignored){}
+			}	
 			
 			System.out.println();
 		}
