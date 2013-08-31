@@ -1,7 +1,5 @@
 package mt.bench;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * Represents Select 2 'abstract' features. Does two things: convert 
  * (1) threads to thread ids and 
