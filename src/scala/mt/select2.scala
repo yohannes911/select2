@@ -81,7 +81,7 @@ package mt{
 	object Select2{
 		def apply(threadIds: Array[Long]) = new Select2(threadIds)
 		
-		def apply(threads: Array[Thread]): Select2 = {
+		def apply[T <: Thread](threads: Array[T]): Select2 = {
 			var threadIds = new Array[Long](2)
 			for (i <- 0 to 1){
 				threadIds(i) = threads(i).getId()
