@@ -54,6 +54,8 @@
 
 	<!-- java -->
 	
+    <target name="java-dist" depends="java-build, java-jar"/>
+	
     <target name="java-jar" depends="java-build">
 		<antcall target="jar">
 			<param name="lang" value="java"/>
