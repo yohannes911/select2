@@ -40,11 +40,11 @@ public class CasSelect2 extends AbstractSelect2{
 		// 2. Set the value locally
 		int newValue = -1;
 		
-		// 2.1. if the value was different then my thread id, then set it to my id
+		// 2.1. If the value was different then my thread id, then set it to my id
 		if (oldValue != tid){
 			newValue = tid;
 		}
-		// 2.2. if the values are the same offset my id with 2, that is set the value to 2 + tid
+		// 2.2. If the values are the same offset my id with 2, that is set the value to 2 + tid
 		// This is necessarry otherwise if we use the same value, then the value does not change
 		// hence the other thread might mistakenly think that the old value did not change.
 		else{
@@ -60,7 +60,7 @@ public class CasSelect2 extends AbstractSelect2{
 		if ( !casResult ){
 			return false;
 		}
-		// 4.2. Else if CAS succeeded mark myself as selected (for debugging and assertion) and execute closure
+		// 4.2. If CAS succeeded mark myself as selected (for debugging and assertion), execute closure and return
 		else{
 			selected[tid] = true;
 			assert !selected[ (tid + 1) % 2 ];

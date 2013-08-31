@@ -96,7 +96,7 @@ public class Select2 extends Debuggable{
 					Thread.yield();
 					if (g_debug){ g_step_finish(); }
 				}
-				wait[i] = true;
+				wait[i] = false;
 			}
 		}
 		else{

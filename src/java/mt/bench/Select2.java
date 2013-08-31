@@ -45,7 +45,7 @@ public class Select2 extends AbstractSelect2{
 				while ( token == i && active[(i + 1) % 2] && wait[i]){
 					Thread.yield();
 				}
-				wait[i] = true;
+				wait[i] = false;
 			}
 		}
 		
