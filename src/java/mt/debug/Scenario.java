@@ -2,8 +2,8 @@ package mt.debug;
 
 /**
  * Represents a test scenario entity. Each scenario consists of:
- * (1) some rounds - the number of method invocations that should be executed durint the test.
- * (2) a list of actor ids - which shows which thread to run in the given step
+ * (1) some rounds - the number of method invocations that should be executed durint the test,
+ * (2) a list of actor ids - each represent thread to run at the given step
  */
 public class Scenario{
 	/**
@@ -44,11 +44,44 @@ public class Scenario{
 		}		
 	}
 	
+	/**
+	 * Constructor for subclasses.
+	 */
+	protected Scenario(){}
+	
+	/**
+	 * Get actors (thread ids of scenario).
+	 */
 	public int[] getActors(){
 		return actors;
 	}
 	
+	/**
+	 * Set actors (thread ids of scenario).
+	 */
+	protected void setActors(int[] actors){
+		this.actors = actors;
+	}
+	
+	/**
+	 * Get number of rounds.
+	 */
 	public int getRounds(){
 		return rounds;
+	}
+	
+	/**
+	 * Set number of rounds.
+	 */
+	protected void setRounds(int rounds){
+		this.rounds = rounds;
+	}
+	
+	public String toString(){
+		String s = "Test scenario: rounds: " + rounds + ", actors: ";
+		for (int i=0; i<actors.length; i++){
+			s += (actors[i] + "");
+		}
+		return s;
 	}
 }

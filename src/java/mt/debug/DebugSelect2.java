@@ -1,7 +1,5 @@
 package mt.debug;
 
-import java.util.Random;
-
 public class DebugSelect2{
 
 	/**
@@ -9,9 +7,13 @@ public class DebugSelect2{
 	 */
 	public static void main(String args[]){
 		if (args[0].equals("-r")){
-			int rounds = Integer.parseInt(args[1]);
+			int cycles = Integer.parseInt(args[1]);
 			int actLen = Integer.parseInt(args[2]);
-			runRandom(rounds, actLen);
+			runRandom(cycles, actLen);
+		}
+		else if (args[0].equals("-a")){
+			int actLen = Integer.parseInt(args[1]);
+			runAll(actLen);
 		}
 		else{
 			int rounds = Integer.parseInt(args[0]);
@@ -19,10 +21,7 @@ public class DebugSelect2{
 		}
 	}
 	
-	protected static void runRandom(int cycles, int actLen){
-		int rounds = Select2.Step.values().length;
-		rounds *= rounds;	
-		Random random = new Random();
+	private static void runRandom(int cycles, int actLen){
 		int selectCount = 0;
 		for (int c=0;c<cycles;c++){
 			Select2Thread[] threads = new Select2Thread[2];
@@ -31,12 +30,7 @@ public class DebugSelect2{
 				threads[i] = new Select2Thread();
 			}	
 			
-			int[] actors = new int[actLen];
-			for (int i=0;i<actLen;i++){
-				actors[i] = random.nextInt(2);
-			}
-			
-			Select2 select2 = new Select2(threads, new Scenario(rounds, actors));
+			Select2 select2 = new Select2(threads, Scenario2.random(ROUNDS, actLen));
 			
 			for (int i = 0; i<2 ;i++){
 				threads[i].setSelect2(select2);
@@ -52,11 +46,47 @@ public class DebugSelect2{
 			
 			System.out.println();
 		}
-		System.out.println("Executed " + cycles + " test cycles, " + rounds + " rounds with " + actLen + " scenario length in each cycle.");
+		System.out.println("Executed " + cycles + " test cycles with " + actLen + " scenario length in each cycle.");
 		System.out.println("During the test " + selectCount + " selection was made by the Select 2 protocol.");
 	}
 	
-	protected static void runManual(int rounds, String actors){
+	private static void runAll(int actLen){
+		int selectCount = 0;
+		int scenarioCount = 0;
+		Scenario2 allScenarios = new Scenario2(ROUNDS, actLen);
+		
+		for (Scenario scenario : allScenarios){
+			scenarioCount++;
+			System.out.println(scenario);
+			Select2Thread[] threads = new Select2Thread[2];
+			
+			for (int i = 0; i<2 ;i++){
+				threads[i] = new Select2Thread();
+			}	
+			
+			Select2 select2 = new Select2(threads, scenario);
+			
+			for (int i = 0; i<2 ;i++){
+				threads[i].setSelect2(select2);
+				threads[i].start();
+			}	
+			for (int i = 0; i<2 ;i++){
+				try{
+					threads[i].join();
+					selectCount+= threads[i].getSelectCount();
+				}
+				catch(Throwable ignored){}
+			}	
+			
+			System.out.println();
+		}
+		System.out.println("Executed all " + scenarioCount + " possible scenarios of " + actLen + " length.");
+		System.out.println("During the test " + selectCount + " selection was made by the Select 2 protocol.");
+	}
+	
+	private final static int ROUNDS = 1;
+	
+	private static void runManual(int rounds, String actors){
 		Select2Thread[] threads = new Select2Thread[2];
 		
 		for (int i = 0; i<2 ;i++){

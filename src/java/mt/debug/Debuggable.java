@@ -65,9 +65,14 @@ public abstract class Debuggable{
 	 */
 	protected void g_start_round(){
 		int tid = getInternalThreadId();
-		int round = g_rounds[tid];
-		if (round < g_num_of_rounds){ g_new_round_info(); }
-		else{ g_final_round_info(); g_finished[tid] = true; throw new RuntimeException("Rounds finished"); }
+		if (g_rounds[tid] < g_num_of_rounds && g_rounds[(tid+1) % 2] < g_num_of_rounds){ 
+			g_new_round_info(); 
+		}
+		else{ 
+			g_final_round_info(); 
+			g_finished[tid] = true; 
+			throw new RuntimeException("Rounds finished"); 
+		}
 	}
 	
 	/**
@@ -102,20 +107,22 @@ public abstract class Debuggable{
 	
 	// experimental
 	protected void g_new_round_info(){
-		g_info("NEW_ROUND");
+		g_round_info("NEW_ROUND");
 	}
 	
 	protected void g_final_round_info(){
-		g_info("ROUNDS_FINISHED");
+		g_round_info("FINISHED");
 	}
 	
-	protected void g_step_info(Object step){
-		g_info(step);
-	}
-	
-	protected void g_info(Object msg){
+	protected void g_round_info(Object msg){
 		int tid = getInternalThreadId();
 		int round = g_rounds[tid];
-		System.out.println("DEBUG:\tTHREAD-" + tid + "[" + round + ", " + g_step + "]:\t" + msg.toString());
+		System.out.println("DEBUG:\tTHREAD-" + tid + "[" + round + "]:\t" + msg.toString());
+	}
+	
+	protected void g_step_info(Object msg){
+		int tid = getInternalThreadId();
+		int round = g_rounds[tid];
+		System.out.println("DEBUG:\tTHREAD-" + tid + "[" + round + ", " + g_actors[g_step] + "]:\t" + msg.toString());
 	}
 }
