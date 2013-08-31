@@ -9,25 +9,25 @@ Summary
  
 The Select 2 protocol is a wait-free synchronization primitive. It can select one and only one thread from two threads. It can be applied to safely execute critical sections. It has the following features:
 
-**This selection protocol provides the following guaratees**:
+**The core selection protocol provides the following guaratees**:
 
 * **safe**: one and only one thread is selected at any time
 * **wait-free**: the selection protocol eventually terminates (ie. in finite steps)
 
-**Its application provides similar guarantees, it can be used to execute critical sections with the following guarantees**:
+**The application protocol provides similar guarantees, it can be used to execute critical sections with the following guarantees**:
 
 * **safe**: one and only one code is executed at any time (ie. does not occur parallel execution)
 * **wait-free**: each thread depends only on its code and does not depend on the other thread, hence iff the the threads own code is wait-free then the whole thread will eventually terminate
 
 ### Implementation ###
 
-The (application) protocol is implemented in both **Java** and **Scala**. 
+The application protocol is implemented in both **Java** and **Scala**. 
 
 **Both API builds upon the Java-builtin primitive: `volatile`. Otherwise it does not use anything else, neither `synchronization` nor `atomic` values.**
 
 I'm not sure whether the API is of any interest, but here are some thoughts:
 
-* **Soft synchronization primitive**: I'm not a system/JVM engineer hence I'm not sure, just guess that the API doesn't builds upon hardware support (ie. CAS). Someone should verify this:-)
+* **Soft synchronization primitive**: I'm not a system/JVM engineer hence I'm not sure, just guess that the API doesn't build upon hardware support (ie. CAS). Someone should verify this:-)
 * **Java 1.4 and-- support**: As far as I see the API could be extended to work with earlier Java versions prior to 1.5.
 * **Promising benchmarks**: The early benchmark results are promising:-) (see details below).
 
@@ -210,7 +210,7 @@ Implementation
 
 The protocol is currently implemented in Java and Scala. See `src/java` and `src/scala`. The code builds upon the Java-builtin synchronization primitive: `volatile` and nothing more. 
 
-Note that the above means that the API (with some possible modifications) might be used for prior versions of Java 1.5. Some modifications might be necessary since the behavious of `volatile` changed in Java 1.5.
+Note that the above means that the API (with some possible modifications) might be used for earlier versions of Java prior to 1.5. Some modifications might be necessary since the behaviour of `volatile` changed in Java 1.5.
 
 ### Code quality ###
 
