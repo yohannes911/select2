@@ -1,4 +1,4 @@
-mt
+select2
 ==
 
-Playground for multithreading
+A synchronization primitive, see `doc/select2.md` for details.
