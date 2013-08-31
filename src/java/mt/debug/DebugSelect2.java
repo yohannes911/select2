@@ -12,7 +12,8 @@ public class DebugSelect2{
 			threads[i] = new Select2Thread();
 		}	
 		
-		Select2 select2 = new Select2(threads, new Scenario(10, args[0]));
+		int rounds = Integer.parseInt(args[0]);
+		Select2 select2 = new Select2(threads, new Scenario(rounds, args[1]));
 		
 		for (int i = 0; i<2 ;i++){
 			threads[i].setSelect2(select2);

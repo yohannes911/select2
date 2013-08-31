@@ -21,6 +21,8 @@ public abstract class Debuggable{
 	 */
 	protected final int[] g_actors;
 	
+	protected volatile boolean[] g_finished;
+	
 	/**
 	 * Represents the number of rounds of the scenario.
 	 */
@@ -39,6 +41,7 @@ public abstract class Debuggable{
 		g_rounds = new int[2];
 		g_actors = scenario.getActors();
 		g_debug = true;
+		g_finished = new boolean[2];
 	}
 
 	/**
@@ -49,6 +52,7 @@ public abstract class Debuggable{
 		g_rounds = null;
 		g_actors = null;
 		g_debug = false;
+		g_finished = null;
 	}
 
 	/**
@@ -57,13 +61,13 @@ public abstract class Debuggable{
 	protected abstract int getInternalThreadId();
 	
 	/**
-	 * Marks that a thread finished its round.
+	 * Marks that a thread wants to start a new round.
 	 */
-	protected boolean g_start_round(){
+	protected void g_start_round(){
 		int tid = getInternalThreadId();
 		int round = g_rounds[tid];
-		if (round < g_num_of_rounds){ g_new_round_info(round); return true; }
-		else{ g_final_round_info(); throw new RuntimeException("Finished"); }
+		if (round < g_num_of_rounds){ g_new_round_info(); }
+		else{ g_final_round_info(); g_finished[tid] = true; throw new RuntimeException("Rounds finished"); }
 	}
 	
 	/**
@@ -79,12 +83,14 @@ public abstract class Debuggable{
 	/**
 	 * Marks that a thread wants to start a new step. Returns the current step number.
 	 */
-	protected int g_start_step(){
+	protected int g_start_step(Object step){
 		int tid = getInternalThreadId();
 		while(true){
-			if (tid != g_actors[g_step]){ break; }
+			if (tid == g_actors[g_step]){ break; }
+			if (g_finished[(tid+1) % 2]){ break; }
 			Thread.yield();
 		}
+		g_start_step_info(step);
 		return g_step;
 	}
 	
@@ -102,16 +108,21 @@ public abstract class Debuggable{
 	}
 
 	// experimental
-	protected void g_new_round_info(int round){
-		g_info("new round[" + round + "]");
+	protected void g_new_round_info(){
+		g_info("new round");
 	}
 	
 	protected void g_final_round_info(){
 		g_info("rounds finished");
 	}
 	
-	protected void g_info(String msg){
+	protected void g_start_step_info(Object step){
+		g_info("started " + step);
+	}
+	
+	protected void g_info(Object msg){
 		int tid = getInternalThreadId();
-		System.out.println("DEBUG:\tTHREAD-" + tid + ": " + msg);
+		int round = g_rounds[tid];
+		System.out.println("DEBUG:\tTHREAD-" + tid + "[" + round + ", " + g_step + "]:\t" + msg.toString());
 	}
 }
