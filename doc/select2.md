@@ -7,7 +7,7 @@ Summary
 
 ### Protocol ###
  
-**`select2` is a wait-free synchronization primitive, that selects one and only one thread from 2 threads** (thats why it is called `select2`). The core protocol provides the following guarantees:
+**The `select2` synchronization primitive is a wait-free protocol, that selects one and only one thread from 2 threads** (thats why it is called `select2`). The core protocol provides the following guarantees:
 
 * **safe**: one and only one thread is selected at any time
 * **wait-free**: the selection protocol eventually terminates (ie. in finite steps)
@@ -192,9 +192,7 @@ Note that this safety feature just guarantees that critical sections are execute
 
 **Statement 4: The `select2` application protocol is wait-free in the following manner. If the block injected to the thread is wait-free then the whole thread will be wait-free as well. In other words: if the thread gets enough processor time then it will eventually terminate.**
 
-Proof: 
-
-Select 2 logic does not depend on the injected code block of either thread and according to Statement 2 the protocol itself is wait-free. Hence if the injected block is wait-free as well, then the whole thread becomes wait-free, too.
+Proof: The `select2` logic does not depend on the injected code block of either thread and according to Statement 2 the core protocol itself is wait-free. Hence if the injected block is wait-free as well, then the whole thread becomes wait-free, too.
 
 
 Implementation
