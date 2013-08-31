@@ -19,26 +19,24 @@ public class DebugSelect2{
 		}
 	}
 	
-	protected static void runRandom(int rounds, int actLen){
-		int oneRoundLen = (Select2.Step.values().length / 2);
-		oneRoundLen *= oneRoundLen;
-		for (int r=0;r<rounds;r++){
+	protected static void runRandom(int cycles, int actLen){
+		int rounds = Select2.Step.values().length;
+		rounds *= rounds;	
+		Random random = new Random();
+		int selectCount = 0;
+		for (int c=0;c<cycles;c++){
 			Select2Thread[] threads = new Select2Thread[2];
 			
 			for (int i = 0; i<2 ;i++){
 				threads[i] = new Select2Thread();
 			}	
 			
-			Random random = new Random();
-			int[] actors = new int[2*actLen];
-			int actor = 0;
+			int[] actors = new int[actLen];
 			for (int i=0;i<actLen;i++){
-				actor = random.nextInt(2);
-				actors[2*i] = actor;
-				actors[2*i+1] = actor;
+				actors[i] = random.nextInt(2);
 			}
 			
-			Select2 select2 = new Select2(threads, new Scenario(oneRoundLen, actors));
+			Select2 select2 = new Select2(threads, new Scenario(rounds, actors));
 			
 			for (int i = 0; i<2 ;i++){
 				threads[i].setSelect2(select2);
@@ -47,13 +45,15 @@ public class DebugSelect2{
 			for (int i = 0; i<2 ;i++){
 				try{
 					threads[i].join();
+					selectCount+= threads[i].getSelectCount();
 				}
 				catch(Throwable ignored){}
 			}	
 			
 			System.out.println();
 		}
-		System.out.println("Executed " + rounds + " test cycles, " + oneRoundLen + " rounds in each");
+		System.out.println("Executed " + cycles + " test cycles, " + rounds + " rounds with " + actLen + " scenario length in each cycle.");
+		System.out.println("During the test " + selectCount + " selection was made by the Select 2 protocol.");
 	}
 	
 	protected static void runManual(int rounds, String actors){
@@ -76,16 +76,23 @@ public class DebugSelect2{
 	 */	
 	private static class Select2Thread extends Thread{
 		private Select2 select2;
+		private int selectCount;
 		
 		public void setSelect2(Select2 select2){
 			this.select2 = select2;
+		}
+		
+		public int getSelectCount(){
+			return selectCount;
 		}
 		
 		public void run(){
 			long id = Thread.currentThread().getId();
 			try{
 				while(true){
-					boolean executed = select2.execute(TEST);
+					if(select2.execute(TEST)){
+						selectCount++;
+					}
 					Thread.yield();
 				}
 			}
@@ -93,7 +100,7 @@ public class DebugSelect2{
 				// System.out.println(ignored);
 				// throw ignored;
 			}
-		}			
+		}
 	}
 	
 	private static final TestClosure TEST = new TestClosure();

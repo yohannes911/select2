@@ -3,7 +3,7 @@ package mt.debug;
 /**
  * A class to support debug.
  *
- * TODO: maybe better model nested steps (ifelse, while, etc).
+ * TODO: handle nested steps (ifelse, while, etc).
  */
 public abstract class Debuggable{
 	/**
@@ -81,9 +81,9 @@ public abstract class Debuggable{
 	}
 
 	/**
-	 * Marks that a thread wants to start a new step (kinda break point).
+	 * Marks that a thread wants to start a new step (similar to a break point, but not the same).
 	 */
-	protected void g_step(Object step){
+	protected void g_step_start(Object step){
 		int tid = getInternalThreadId();
 		while(true){
 			if (tid == g_actors[g_step]){ break; }
@@ -91,16 +91,22 @@ public abstract class Debuggable{
 			Thread.yield();
 		}
 		g_step_info(step);
+	}
+
+	/**
+	 * Marks that a thread finished a step (similar to a break point, but not the same).
+	 */
+	protected void g_step_finish(Object step){
 		g_step = (g_step + 1) % g_actors.length;
 	}
 	
 	// experimental
 	protected void g_new_round_info(){
-		g_info("new round");
+		g_info("NEW_ROUND");
 	}
 	
 	protected void g_final_round_info(){
-		g_info("rounds finished");
+		g_info("ROUNDS_FINISHED");
 	}
 	
 	protected void g_step_info(Object step){
