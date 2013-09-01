@@ -101,10 +101,25 @@ public class Scenario2 extends Scenario implements Iterable<Scenario>, Iterator<
 	 * Creates a random scenario by the given rounds and actor length.
 	 */
 	public static Scenario random(int rounds, int actorLength){
+		if (actorLength < 2){  
+			System.out.println("WARN: minimal actor length is 2, incremented to that.");
+			actorLength = 2;
+		}
+		
 		int[] actors = new int[actorLength];
-		for (int i=0; i<actorLength; i++){
-			actors[i] = random.nextInt(2);
-		}	
+		int actor;
+		int numberOfOnes = 0;		
+		int numberOfZeros = 0;		
+		do{
+			numberOfOnes = 0;
+			numberOfZeros = 0;			
+			for (int i=0; i<actorLength; i++){
+				actor = random.nextInt(2);
+				actors[i] = actor;
+				if (actor == 1){ numberOfOnes++; }
+				else{ numberOfZeros++; }
+			}	
+		}while(numberOfOnes == actorLength || numberOfZeros == actorLength);
 		return new Scenario(rounds, actors);
 	}
 }

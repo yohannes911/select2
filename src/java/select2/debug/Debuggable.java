@@ -65,7 +65,7 @@ public abstract class Debuggable{
 	 */
 	protected void g_start_round(){
 		int tid = getInternalThreadId();
-		if (g_rounds[tid] < g_num_of_rounds && g_rounds[(tid+1) % 2] < g_num_of_rounds){ 
+		if (g_rounds[tid] < g_num_of_rounds || g_rounds[(tid+1) % 2] < g_num_of_rounds){ 
 			g_new_round_info(); 
 		}
 		else{ 
@@ -82,7 +82,7 @@ public abstract class Debuggable{
 		int tid = getInternalThreadId();
 		int round = g_rounds[tid];
 		
-		if (round < g_num_of_rounds){ g_rounds[tid] = round + 1; }
+		g_rounds[tid] = round + 1;
 	}
 
 	/**
