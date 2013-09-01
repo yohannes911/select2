@@ -26,7 +26,7 @@ The application protocol is **implemented in both Java and Scala.**
 I'm not sure whether the API is of any interest, but here are some thoughts:
 
 * *Soft synchronization primitive*: I'm not a system/JVM engineer hence I'm not sure, just guess that the API, ie. `volatile` doesn't build upon hardware support (ie. CAS). Someone should verify this:-)
-* *Java 1.4- support*: As far as I see the API could be extended to work with earlier Java versions prior to 1.5.
+* *Java 1.4- support*: As far as I see the API could be extended to work with earlier Java versions prior to 1.5. Since `atomic values` appeared in v.1.5 the API could be useful for earlier Java versions in order to implement lock-free algorithms.
 * *Promising benchmarks*: The early benchmark results are promising:-) (see details below).
 
 ### Status ###
@@ -212,7 +212,9 @@ The API is experimental. Especially the Java API is more extensively tested then
 
 ### Empirical evidence ###
 
-There are some empirical evidences that the Java API works, not just the above formal proof. The `src/java/debug` package implements a debugable version of the API. With this I've tested thousands of concurent scenarios w/o failure. Of course this doesn't replace the formal proof.
+There are some empirical evidences that the Java API works, not just the above formal proof. The `src/java/debug` package implements a debugable version of the API. With this I've tested thousands of concurent scenarios w/o failure. 
+
+Note that the test is a simplified one, is far from covering all possible, concurent execution paths. The sole purpose of the test is to add some empirical insight/evidence and not to replace the formal proof. Also anyone is welcome to provide a stronger testkit:-)
 
 #### All scenarios (of specific length) ####
 
