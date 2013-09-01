@@ -238,7 +238,7 @@ The above will run all possible 4-length scenarios, however it will only termina
 
 #### Random scenarios ####
 
-For larger scenarios running all combinations might be very time consuming. For instance the above `-a 20` args means more than 1 million combinations. For this situation you can run random scenarios. 
+For larger scenarios running all combinations might be very time consuming. For instance there are more than 1 million 20-length scenarios. For this and such situations you can run random scenarios:
 
 For instance to run random 40-length scenarios 10 times, issue:
 
