@@ -188,7 +188,7 @@ The extended Select 2 protocol is safe and wait-free in the following manner:
 
 Proof: When blocks are executed in a thread, that thread must be selected. However due to Statement 1, threads are never selected in parallel, hence blocks are never executed in parallel.
 
-Note that this safety feature just guarantees that critical sections are executed atomically / sequentally and never in parallel. However it does not guarantee that the block will be ever executed. This is where `Select 2` differs from the `synhronization` primitive. Both are safe, however while `synhronization` blocks until execution, `Select 2` neither blocks nor does it guarentee execution. 
+Note that this safety feature just guarantees that critical sections are executed atomically / sequentally and never in parallel. However it does not guarantee that the block will be ever executed. This is where `select2` differs from the Java `synhronization` primitive. Both primitive is safe, however while `synhronization` blocks until execution, `select2` neither blocks nor does it guarentee execution. 
 
 **Statement 4: The `select2` application protocol is wait-free in the following manner. If the block injected to the thread is wait-free then the whole thread will be wait-free as well. In other words: if the thread gets enough processor time then it will eventually terminate.**
 
