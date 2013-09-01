@@ -271,11 +271,11 @@ in order to run 10 rounds in each thread.
 
 A microbenchmark is implemented for the Java version. See `src/java/bench`.
 
-The `select2` application service was reimplemented based upon the Java-builtin synchronization primitive: `compare and set`. That is to say this code implements the above features but using a different algorithm and a different primitive (ie. `AtomicInteger`).
+The `select2` application service was reimplemented based upon the Java-builtin synchronization primitive: `compare and set` (`CAS`). That is to say this code implements the `select2` features but uses a different algorithm and is based on a different synchronization primitive: `AtomicInteger`.
 
-The microbenchmark compares the custom `volatile` based implementation and the `CAS` based one. The early results are promising:
+The microbenchmark compares the custom `volatile` based implementation with the above `CAS` based one. The early results seem promising:
 
-In my machine the custom, `volatile` based implementation runs 2-3x faster then the `CAS` one. Of course this is an orange-apple comparision, since the `select` protocol (in its current form) deals with only 2 threads. Still the benchmark shows that the API might perform well and even better than the Java builtin at least for small number of threads.
+In my machine the custom, `volatile` based implementation runs 2-3x faster then the `CAS` one. Of course this is an orange-apple comparison, since the `select2` protocol deals with only 2 threads. Still the benchmark shows that the API might perform well and even better than the Java builtin at least for small number of threads.
 
 To run the benchmark, issue the following or such:
 
