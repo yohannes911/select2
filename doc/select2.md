@@ -214,6 +214,8 @@ The API is experimental. Especially the Java API is more extensively tested then
 
 There are some empirical evidences that the Java API works, not just the above formal proof. The `src/java/debug` package implements a debugable version of the API. With this I've tested thousands of concurent scenarios w/o failure. Of course this doesn't replace the formal proof.
 
+#### All scenarios (of specific length) ####
+
 To run some test scenarios issue the following or such:
 
     java -cp lib/java-mt.jar select2.debug.DebugSelect2 -a 4 
@@ -234,10 +236,7 @@ The above command will run one round, that is it terminates if each thread ran t
 
 The above will run all possible 4-length scenarios, however it will only terminate if each thread ran the protocol (at least) twice.
 
-The Java API was succesfully tested against the following configurations:
-
-    java -cp lib/java-mt.jar select2.debug.DebugSelect2 -a 20
-    java -cp lib/java-mt.jar select2.debug.DebugSelect2 -a 16 16
+#### Random scenarios ####
 
 For larger scenarios running all combinations might be very time consuming. For instance the above `-a 20` args means more than 1 million combinations. For this situation you can run random scenarios. 
 
@@ -249,6 +248,8 @@ If each thread has to run the protocol at least 3 times, then issue:
 
     java -cp lib/java-mt.jar select2.debug.DebugSelect2 -r 10 3 40
 
+#### Specific scenario ####
+
 Finally if you have a specific scenario, say `01001110110`, then issue:
 
     java -cp lib/java-mt.jar select2.debug.DebugSelect2 -m 01001110110
@@ -258,6 +259,13 @@ or
     java -cp lib/java-mt.jar select2.debug.DebugSelect2 -m 10 01001110110
 
 in order to run 10 rounds in each thread.
+
+#### Checklist ####
+
+* You shouldn't see any `assertion error`, which would mean that two threads were simultaneously selected
+* None of the threads should wait 'forever' (see lines containing `WAIT_CONDITION`)
+* At the end of the test you should see at least as many selections as the number of scenarios multipled by the number of rounds: `number of selections > number of scenarios * rounds`
+
 
 ### Benchmark ###
 
