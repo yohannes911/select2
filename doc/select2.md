@@ -200,7 +200,9 @@ Implementation
 
 ### Platforms ###
 
-The protocol is currently implemented in Java and Scala. See `src/java` and `src/scala`. The code builds upon the Java-builtin synchronization primitive: `volatile` and nothing else. Especially it does not use either `synchronization` or `atomic values`.
+The protocol is currently implemented in Java and Scala - see the `Select2` class in `src/java` and `src/scala`. 
+
+The code builds upon the Java-builtin synchronization primitive: `volatile` and nothing else. Especially it does not use either `synchronization` or `atomic values`.
 
 Note that the above means that the API (with some possible modifications) might be used for earlier versions of Java prior to 1.5. Some modifications might be necessary since the behaviour of `volatile` changed in Java 1.5.
 
@@ -212,6 +214,51 @@ The API is experimental. Especially the Java API is more extensively tested then
 
 There are some empirical evidences that the Java API works, not just the above formal proof. The `src/java/debug` package implements a debugable version of the API. With this I've tested thousands of concurent scenarios w/o failure. Of course this doesn't replace the formal proof.
 
+To run some test scenarios issue the following or such:
+
+    java -cp lib/java-mt.jar select2.debug.DebugSelect2 -a 4 
+
+This will test `2 ^ 4 - 2 = 14` possible concurent scenarios. Such a scenario looks like this: `0010` which means that:
+ 
+1. `00..`: thread `0` will run 2 steps of the protocol, then
+2. `..1.`: thread `1` will run 1 step of the protocol, then again
+3. `...0`: thread `0` will run 1 step, then 
+
+the whole starts from the begining (ie. it is cyclic)... 
+
+Note that theoretically there are `2 ^ 4 = 16` such 4-length scenarios. However `0000` and `1111` does not count since they represent single threaded scenarios.
+
+The above command will run one round, that is it terminates if each thread ran the protocol (at least) once. If you want more rounds, issue this or such:
+
+    java -cp lib/java-mt.jar select2.debug.DebugSelect2 -a 2 4 
+
+The above will run all possible 4-length scenarios, however it will only terminate if each thread ran the protocol (at least) twice.
+
+The Java API was succesfully tested against the following configurations:
+
+    java -cp lib/java-mt.jar select2.debug.DebugSelect2 -a 20
+    java -cp lib/java-mt.jar select2.debug.DebugSelect2 -a 16 16
+
+For larger scenarios running all combinations might be very time consuming. For instance the above `-a 20` args means more than 1 million combinations. For this situation you can run random scenarios. 
+
+For instance to run random 40-length scenarios 10 times, issue:
+
+    java -cp lib/java-mt.jar select2.debug.DebugSelect2 -r 10 40
+
+If each thread has to run the protocol at least 3 times, then issue:
+
+    java -cp lib/java-mt.jar select2.debug.DebugSelect2 -r 10 3 40
+
+Finally if you have a specific scenario, say `01001110110`, then issue:
+
+    java -cp lib/java-mt.jar select2.debug.DebugSelect2 -m 01001110110
+
+or 
+
+    java -cp lib/java-mt.jar select2.debug.DebugSelect2 -m 10 01001110110
+
+in order to run 10 rounds in each thread.
+
 ### Benchmark ###
 
 A microbenchmark is implemented for the Java version. See `src/java/bench`.
@@ -221,6 +268,12 @@ The `select2` application service was reimplemented based upon the Java-builtin 
 The microbenchmark compares the custom `volatile` based implementation and the `CAS` based one. The early results are promising:
 
 In my machine the custom, `volatile` based implementation runs 2-3x faster then the `CAS` one. Of course this is an orange-apple comparision, since the `select` protocol (in its current form) deals with only 2 threads. Still the benchmark shows that the API might perform well and even better than the Java builtin at least for small number of threads.
+
+To run the benchmark, issue the following or such:
+
+    java -cp lib/java-mt.jar select2.bench.SimpleBenchSelect2 1000
+
+This will run 10 test cycles and in each cycle it will run both implementations 1000 times.
 
 ### Demo ###
 
