@@ -231,12 +231,12 @@ The clipboard provides the following features:
 * one (thread) can `push` an object to the clipboard which then 
 * can be `popped` (possibly by another thread)
 
-The clipboard follows the following (synchronization) protocol:
+The clipboard follows the following protocol:
 
 * after `pushing` an object no more object can be `pushed` till the current one is `popped`
 * also if an object is `popped` then no more object could be `popped` until a new one is `pushed` onto the clipboard
 
-Since it is a demo of the `select2` protocol it handles only 2 threads and not more.
+The clipboard is thread safe - since it is a demo of the `select2` protocol it handles only 2 threads and not more.
 
 TODO
 -------------------------------------------------------------------------------
