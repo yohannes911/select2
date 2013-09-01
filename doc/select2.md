@@ -236,7 +236,7 @@ The clipboard follows the following protocol:
 * after `pushing` an object no more object can be `pushed` till the current one is `popped`
 * also if an object is `popped` then no more object could be `popped` until a new one is `pushed` onto the clipboard
 
-The clipboard is thread safe - since it is a demo of the `select2` protocol it handles only 2 threads and not more.
+The clipboard is wait-free and thread safe. However since it is a demo of the `select2` protocol it can handle only 2 threads and not more.
 
 TODO
 -------------------------------------------------------------------------------
