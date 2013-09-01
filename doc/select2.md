@@ -224,14 +224,16 @@ In my machine the custom, `volatile` based implementation runs 2-3x faster then 
 
 ### Demo ###
 
-Both the Java and the Scala API provides a simplified clipboard implementation for demo purposes - see the `Clip2` class. This provides the following features:
+Both the Java and the Scala API provides a simplified clipboard implementation for demo purposes - see the `Clip2` class. 
 
-* one can `push` an object to the clipboard which then 
-* can be `popped`
+The clipboard provides the following features:
+
+* one (thread) can `push` an object to the clipboard which then 
+* can be `popped` (possibly by another thread)
 
 The clipboard follows the following (synchronization) protocol:
 
-* after `pushing` and object no more object can be `pushed` till the current one is `popped`
+* after `pushing` an object no more object can be `pushed` till the current one is `popped`
 * also if an object is `popped` then no more object could be `popped` until a new one is `pushed` onto the clipboard
 
 Since it is a demo of the `select2` protocol it handles only 2 threads and not more.
