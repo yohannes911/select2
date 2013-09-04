@@ -116,8 +116,8 @@ Assume that thread `i` enters the selection (`i = 0 or 1`). Then the pseudo code
 
 1. At most one thread is selected, ie. `selected[0] and selected[1]` is always false
 2. At least one thread is selected, ie. if a thread is active at any point in time, then either this or the other thread is selected. More precisely:
-   1. only one thread is active then it will be selected, formally: if `active[i] and not active[i+1]` until the thread `i` exits then `selected[i]` will happen.
-   1. if both thread is active then at least one of them is selected, formally: if `active[i] and active[i]` at some point in time then `selected[i] or selected [i+1]` will happen.
+   1. If only one thread is active then it will be selected. Formally: if `active[i] and not active[i+1]` until the thread `i` exits then `selected[i]` will happen (before the thread exits the protocol).
+   1. If both thread is active then at least one of them is selected. Formally: if `active[i] and active[i]` at some point in time then `selected[i] or selected [i+1]` will happen  (before each thread exits the protocol).
 
 Note that the above does not mean that it is impossible that both thread is selected one after the other. It is in fact possible (the proof is left to the reader:-)). The thing which is impossible is that they are selected at the same time.
  
