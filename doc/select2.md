@@ -111,9 +111,15 @@ Assume that thread `i` enters the selection (`i = 0 or 1`). Then the pseudo code
 
 ### Core features ###
 
-**Statement 1: `select2` is safe in the following manner: the protocol guarantees that one and only one thread is selected at any time. Formally:  `not selected[0] or not selected[1]` always holds.**
-	
-Proof: Indirectly assume, that at some point in time both thread is selected. There are 3 possible cases:
+**Statement 1: `select2` is safe in the following manner: the protocol guarantees that one and only one thread is selected at any time.** Formally: 
+
+1. At most one thread is selected, ie. `selected[0] and selected[1]` is always false
+2. At least one thread is selected, ie. if a thread is active at any point in time, then either this thread or the other will be selected, ie.:
+ if `active[0] and active[1]` then `selected[0] or selected[1]` will happen.
+
+Proof: 
+
+**at most one is selected**: Indirectly assume, that at some point in time both thread is selected. There are 3 possible cases:
 
 1. Both thread is token owner
 1. None of the threads is token owner
@@ -139,6 +145,16 @@ Again, due to the following lemma, one of the threads should have detected that 
 
 Note that the lemma is applicable beacuse if (indirectly) both thread is  selected at some point in time, then (1) both thread is active and (2) already executed the checks. Hence the lemma conditions are true.
 
+**at least one is selected** this formally means:
+
+1. If the other thread is not active during this thread's execution, then this thread will be selected.
+1. If two threads are active at any point in time then one of them them will be selected: 'if not this then that'
+
+The 1. is evident. Otherwise if the threads run in parallel, and one of them is not selected, then:
+
+* if the not selected thread exits at section 3.1, it means that the other one is active, it is the token owner and will be selected in section 4.2
+* if the thread exits at section 4.1, it means that it was the token owner, but lost its ownership, hence the other thread is selected.
+
 
 **Lemma: If two threads run in parallel than one of the threads detects that the other is active in section 3. Formally:** 
 
@@ -160,21 +176,7 @@ Proof:
 The `select2` protocol has another feature, namely it is wait-free:
 
 
-**Statement 2: In each round at least one thread is selected.** Formally:
-
-1. If the other thread is not active during the thread's own execution, that thread will be selected.
-1. If two threads are active at any point in time then one and only one of them will be selected.
-
-Proof: Statement 1. is evident. Otherwise if the threads run in parallel, then if a thread is not selected, then the other one must be selected:
-
-* If thread exits at section 3.1, it means that the other thread is the token owner and will be selected in section 4.2
-* If the thread exits at section 4.1, it means that the token owner lost its ownership, hence the other thread is selected.
-
-**Statement 3: In each round one and only one thread is selected.**
-
-Proof: Follows from Statement 1 and 2.
-
-**Statement 4: `select2` is wait-free in the following manner: each thread that entered the selection protocol terminates in finite steps**
+**Statement 2: `select2` is wait-free in the following manner: each thread that entered the selection protocol terminates in finite steps**
 
 Proof: Only the token owner has a conditional wait in section 3.2., a thread who does not own the token obviously terminates in finite steps.
 
@@ -219,26 +221,26 @@ The extended `select2` protocol is safe and wait-free in the following manner:
 
 ### Application protocol features ###
 
-**Statement 5: The `select2` application protocol is safe in the following manner: blocks are never executed in parallel.**
+**Statement 3: The `select2` application protocol is safe in the following manner: at least one block is executed, however blocks are never executed in parallel.**
 
-Proof: When blocks are executed in a thread, that thread must be selected. However due to Statement 1, threads are never selected in parallel, hence blocks are never executed in parallel.
+Proof: 
 
-Note that this safety feature just guarantees that critical sections are executed atomically / sequentally and never in parallel. However it does not guarantee that the block will be ever executed. This is where `select2` differs from the Java `synhronization` primitive. Both primitive is safe, however while `synhronization` blocks until execution, `select2` neither blocks nor does it guarentee execution. 
-
-**Statement 6: In each round one and only one block is executed**. Formally:
+**at least one executed**: this formally means:
 
 1. If the other thread is not active during the thread's own execution, that thread's code will be executed.
-1. If two threads are active at any point in time then one and only one of them will be executed.
+1. If two threads are active at any point in time then at least one one of them will be executed.
 
-Proof: This follows from Statement 2: one and only one thread is selected which will execute its block, meanwhile the other thread is not selected, will not run its block.
+This follows from Statement 1: at least one thread is selected which then will execute its block.
+
+**never executed in parallel**: When blocks are executed in a thread, that thread must be selected. However due to Statement 1, threads are never selected in parallel, hence blocks are never executed in parallel.
+
+Note that this safety feature just guarantees that critical sections are executed atomically and the system as a whole moves on (at least one section is executed). However it does not guarantee that the block of a given thread will be ever executed. This is where `select2` differs from the Java `synhronization` primitive. Both primitive is safe, however while `synhronization` blocks until execution, `select2` neither blocks nor does it guarentee execution. 
 
 
-**Statement 7: The `select2` application protocol is wait-free in the following manner**: If the block injected to the thread is wait-free then the whole thread will be wait-free as well. In other words: if the thread gets enough processor time then it will eventually terminate.
+**Statement 4: The `select2` application protocol is wait-free in the following manner**: If the block injected to the thread is wait-free then the whole thread will be wait-free as well. In other words: if the thread gets enough processor time then it will eventually terminate.
 
 Proof: The `select2` logic does not depend on the injected code block of either thread and according to Statement 2 the core protocol itself is wait-free. Hence if the injected block is wait-free as well, then the whole thread becomes wait-free, too.
 
-
-Note that the above two feature means that both the threads locally and the system as a whole will always move on (ie. 'do something').
 
 Implementation
 -------------------------------------------------------------------------------
