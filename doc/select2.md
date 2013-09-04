@@ -139,6 +139,7 @@ Again, due to the following lemma, one of the threads should have detected that 
 
 Note that the lemma is applicable beacuse if (indirectly) both thread is  selected at some point in time, then (1) both thread is active and (2) already executed the checks. Hence the lemma conditions are true.
 
+
 **Lemma: If two threads run in parallel than one of the threads detects that the other is active in section 3. Formally:** 
 
 if the following conditions hold:
@@ -158,7 +159,22 @@ Proof:
 
 The `select2` protocol has another feature, namely it is wait-free:
 
-**Statement 2: `select2` is wait-free in the following manner: each thread that entered the selection protocol terminates in finite steps**
+
+**Statement 2: In each round at least one thread is selected.** Formally:
+
+1. If the other thread is not active during the thread's own execution, that thread will be selected.
+1. If two threads are active at any point in time then one and only one of them will be selected.
+
+Proof: Statement 1. is evident. Otherwise if the threads run in parallel, then if a thread is not selected, then the other one must be selected:
+
+* If thread exits at section 3.1, it means that the other thread is the token owner and will be selected in section 4.2
+* If the thread exits at section 4.1, it means that the token owner lost its ownership, hence the other thread is selected.
+
+**Statement 3: In each round one and only one thread is selected.**
+
+Proof: Follows from Statement 1 and 2.
+
+**Statement 4: `select2` is wait-free in the following manner: each thread that entered the selection protocol terminates in finite steps**
 
 Proof: Only the token owner has a conditional wait in section 3.2., a thread who does not own the token obviously terminates in finite steps.
 
@@ -184,6 +200,9 @@ So in each case the other thread, thread `1` terminates in finite steps after it
    1. Thread `1` exited the previous selection w/o taking the token. Hence currently it is not the token owner. In this case it will wake up thread `0` in section 3.1, in finite steps, hence the loop exits (because `wait[0]` becomes false and then it will be never changed back to true until thread `0` is in wait loop).
    1. Thread `1` exited the previous selection by taking the token, ie. it is currently the token owner. Neither thread would change the token ownership again until thread `0` is in the wait loop. Why? Beacuse thread `1` will detect thread `0` as active and enter the loop itself. Since the wait loop checks whether the token ownership changed, the loop will exit (because `token == 0` becomes false).
 
+The whole protocol is wait-free in the following manner as well:
+
+
 ### Application protocol ###
 
 In order to use the protocol to execute critical sections it must be extended in some way. This works like this:
@@ -200,16 +219,26 @@ The extended `select2` protocol is safe and wait-free in the following manner:
 
 ### Application protocol features ###
 
-**Statement 3: The `select2` application protocol is safe in the following manner: blocks are never executed in parallel.**
+**Statement 5: The `select2` application protocol is safe in the following manner: blocks are never executed in parallel.**
 
 Proof: When blocks are executed in a thread, that thread must be selected. However due to Statement 1, threads are never selected in parallel, hence blocks are never executed in parallel.
 
 Note that this safety feature just guarantees that critical sections are executed atomically / sequentally and never in parallel. However it does not guarantee that the block will be ever executed. This is where `select2` differs from the Java `synhronization` primitive. Both primitive is safe, however while `synhronization` blocks until execution, `select2` neither blocks nor does it guarentee execution. 
 
-**Statement 4: The `select2` application protocol is wait-free in the following manner. If the block injected to the thread is wait-free then the whole thread will be wait-free as well. In other words: if the thread gets enough processor time then it will eventually terminate.**
+**Statement 6: In each round one and only one block is executed**. Formally:
+
+1. If the other thread is not active during the thread's own execution, that thread's code will be executed.
+1. If two threads are active at any point in time then one and only one of them will be executed.
+
+Proof: This follows from Statement 2: one and only one thread is selected which will execute its block, meanwhile the other thread is not selected, will not run its block.
+
+
+**Statement 7: The `select2` application protocol is wait-free in the following manner**: If the block injected to the thread is wait-free then the whole thread will be wait-free as well. In other words: if the thread gets enough processor time then it will eventually terminate.
 
 Proof: The `select2` logic does not depend on the injected code block of either thread and according to Statement 2 the core protocol itself is wait-free. Hence if the injected block is wait-free as well, then the whole thread becomes wait-free, too.
 
+
+Note that the above two feature means that both the threads locally and the system as a whole will always move on (ie. 'do something').
 
 Implementation
 -------------------------------------------------------------------------------
@@ -308,29 +337,29 @@ in order to run 10 rounds in each thread.
 
 #### Steps ####
 
-As said, scenarios are built upon (quasi-elementary) steps. In each round a thread is selected (according the current scenario) and executes a step.
+As said, scenarios are built upon (quasi-elementary) steps. In each round a thread is selected (according to the current test scenario) and executes a step.
 
 The current debug implementation uses the following steps:
 
 1. `MARK_ACTIVE` - statement 1. when thread marks itself as active 
 2. `IS_OWNER` - statement 2. when thread checks whether it is the token owner
-3. `OWNER_ACTIVE` - block 3.1 when thread detects that the other thread, the token owner is active and exits 
+3. `OWNER_ACTIVE` - statement block 3.1 when thread detects that the other thread, the token owner is active and exits 
 4. `WAIT_CONDITION` - the wait condition in block 3.1 when the token owner thread detects that the other thread is active, goes onto the wait loop
-5. `LOST_OWNERSHIP` - block 4.1 when the token owner detects that it lost ownership, hence exits
-6. `OWNER_SELECTED` - block 4.2 when the token owner thread is selected
-7. `NOT_OWNER_SELECTED` - block 4.3 when the other thread is selected, the one which is not the token owner
+5. `LOST_OWNERSHIP` - statement block 4.1 when the token owner detects that it lost ownership, hence exits
+6. `OWNER_SELECTED` - statement block 4.2 when the token owner thread is selected
+7. `NOT_OWNER_SELECTED` - statement block 4.3 when the other thread is selected, the one which is not the token owner
 
 As you might see the test is far from being perfect, it can be enchanced in several ways:
 
-1. More steps could be defined to cover all Java statements not just blocks.
-2. Go down and test at the machine level (which would be a hard stuff for me:-) but might be easy for others)
+1. Steps could be defined in a more fine grained manner in order to cover all Java statements not just blocks.
+2. Go down and test at the machine level (which would be a hard stuff for me:-) but might be easy for others).
 3. Test in a truely parallel way. The current tests are deterministic ones, where elementary 'steps' are executed sequentally. However in multiprocessor environments even elementary steps might be executed in parallel. This direction leads to non-deterministic tests.
 
 #### Checklist ####
 
 * You shouldn't see any `assertion error` - otherwise it would mean that two threads were simultaneously selected, hence the safety feature is broken
 * None of the threads should wait 'forever' - otherwise it would mean that a thread blocks, hence the wait-free feature is broken (look at repeating lines of `WAIT_CONDITION`)
-* At the end of the test you should see at least as many selections as the number of scenarios multipled by the number of rounds: `number of selections > number of scenarios * rounds` - why? in each round of a scenario at least one thread must be selected, hence if you see less selections then it shows there's some problem with the implementation
+* At the end of the test you should see at least as many selections as the number of scenarios multipled by the number of rounds: `number of selections > number of scenarios * rounds` - why? in each round of a scenario at least one thread must be selected, it never happens that none of the threads is selected (oops this must be proven!)
 
 
 ### Benchmark ###
