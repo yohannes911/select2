@@ -286,17 +286,17 @@ To build just the Scala API:
 
 See `build.xml` for more details.
 
-### Code quality ###
+### Quality ###
 
-The API is experimental. Especially the Java API is more extensively tested then the Scala one.
+The API is experimental. Especially the Java API is more extensively tested then the Scala one. A simple functional test and microbenchmark is implemented to check the Java implementation.
 
-### Empirical evidence ###
+#### Functional test ####
 
 There are some empirical evidences that the Java API works, not just the above formal proof. The `src/java/debug` package implements a debugable version of the API. With this I've tested thousands of concurent scenarios w/o failure. 
 
 *Note*: The test is a simplified one, is far from covering all possible, concurent execution paths. The sole purpose of the test is to add some empirical insight/evidence and not to replace the formal proof. Also anyone is welcome to provide a stronger testkit:-)
 
-#### All scenarios (of specific length) ####
+##### All scenarios (of specific length) #####
 
 To run some test scenarios issue the following or such:
 
@@ -318,7 +318,7 @@ The above command will run one round, that is it terminates if each thread ran t
 
 The above will run all possible 4-length scenarios, however it will only terminate if each thread ran the protocol (at least) twice.
 
-#### Random scenarios ####
+##### Random scenarios #####
 
 For larger scenarios running all combinations might be very time consuming. For instance there are more than 1 million 20-length scenarios. For this and such situations you can run random scenarios:
 
@@ -330,7 +330,7 @@ If each thread has to run the protocol at least 3 times, then issue:
 
     java -cp lib/java-select.jar select2.debug.DebugSelect2 -r 10 3 40
 
-#### Specific scenario ####
+##### Specific scenario #####
 
 Finally if you have a specific scenario, say `01001110110`, then issue:
 
@@ -342,7 +342,7 @@ or
 
 in order to run 10 rounds in each thread.
 
-#### Steps ####
+##### Steps #####
 
 As said, scenarios are built upon (quasi-elementary) steps. In each round a thread is selected (according to the current test scenario) and executes a step.
 
@@ -362,14 +362,14 @@ The current debug implementation uses the following steps:
 2. Go down and test at the machine level (which would be a hard stuff for me:-) but might be easy for others).
 3. Test in a truely parallel way. The current tests are deterministic ones, where elementary 'steps' are executed sequentally. However in multiprocessor environments even elementary steps might be executed in parallel. This direction leads to non-deterministic tests.
 
-#### Checklist ####
+##### Checklist #####
 
 * You shouldn't see any `assertion error` - otherwise it would mean that two threads were simultaneously selected, hence the safety feature is broken
 * None of the threads should wait 'forever' - otherwise it would mean that a thread blocks, hence the wait-free feature is broken (look at repeating lines of `WAIT_CONDITION`)
 * At the end of the test you should see at least as many selections as the number of scenarios multipled by the number of rounds: `number of selections > number of scenarios * rounds` - why? in each round of a scenario at least one thread must be selected, it never happens that none of the threads is selected (oops this must be proven!)
 
 
-### Benchmark ###
+#### Benchmark ####
 
 A simple microbenchmark is implemented for the Java version to gain some preliminary insights. See `src/java/bench`.
 
@@ -389,7 +389,7 @@ This will run 10 test cycles and in each cycle it will run both implementations 
 
 ### Demo ###
 
-Both the Java and the Scala API provides a simplified clipboard implementation for demo purposes - see the `Clip2` class. 
+Both the Java and the Scala API provides a simplified clipboard implementation for demo purposes, ie. to demonstrate the API (usage). See the `Clip2` class for details. 
 
 The clipboard provides the following features:
 
@@ -436,7 +436,7 @@ What happened in real?
     Thread-9 could not push objects till
     Thread-10 popped 55
 
-The demo later might be enchanced in order to print messages out in order.
+The demo later might be enchanced in order to print messages out in order which itself might be a demo for `select2`.
 
 
 TODO
