@@ -137,6 +137,7 @@ Again, due to the following lemma, one of the threads should have detected that 
 1. If thread `1` detected thread `0` as active than it exited since it was not the token owner, hence was not selected. Contradiction.
 1. If thread `1` did not detect thread `0` as active, than thread `0` detected thread `1`. Since thread `0` is the token owner it goes into the wait loop untill thread `1` is selected and takes the token ownership (in section 3.2). However this means that thread `0` either does not run section 4.2. instead it runs 4.1, hence is not selected or thread `0` does not run section 4.2 until thread `1` is unselected, hence they are not selected in parallel. Contradiction.
 
+Note that the lemma is applicable beacuse if (indirectly) both thread is  selected at some point in time, then (1) both thread is active and (2) already executed the checks. Hence the lemma conditions are true.
 
 **Lemma: If two threads run in parallel than one of the threads detects that the other is active in section 3. Formally:** 
 
