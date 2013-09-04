@@ -68,14 +68,14 @@ Assume that thread `i` enters the selection (`i = 0 or 1`). Then the pseudo code
 
     if active[i + 1]
 
--- -- 3.1. if I am not the token owner, wake the owner up, cleanup and exit
+-- -- 3.1. if I am not the token owner, possibly wake the owner up, cleanup and exit
 
        if !token_owner 
            wait[i+1] = false
            active[i] = false
            return false
 
--- -- 3.2. if I am the token owner, wait till either the other thread changes its state or I am waked up
+-- -- 3.2. if I am the token owner, wait till either the other thread changes its state or I am waken up
        
        else 
 		  wait[i] = true
@@ -155,22 +155,34 @@ Proof:
 4. However this means that thread `1` executed the check after thread `0` was already active. 
 5. Due to condition 2 thread `1` detected thread `0` as active.
 
-The Select 2 protocol has another feature, namely it is lock free. In order to see what it means, we need to examine the protocol's application:
+The `select2` protocol has another feature, namely it is wait-free:
 
 **Statement 2: `select2` is wait-free in the following manner: each thread that entered the selection protocol terminates in finite steps**
 
 Proof: Only the token owner has a conditional wait in section 3.2., a thread who does not own the token obviously terminates in finite steps.
 
-Assume that thread `0` is a token owner and it entered the conditional wait in section 3.2. At some time before this event the other thread was active as well, otherwise thread `0` would not go into the loop. At that time, when it was detected active, the other thread, thread `1` could not be token owner as well (`token != 1`). Hence the other thread finishes in finite steps. Then there are two possible scenarios:
+Assume that thread `0` is a token owner and it entered the conditional wait in section 3.2. At some time before this event the other thread was active as well, otherwise thread `0` would not go into the loop. 
+Not two case could happe, at that time, when the other thread was detected active, that thread, thread `1` was not the token owner (`token_owner was false` for thread `1`) or it was (`token_owner was true` for thread `1`). 
+
+_Case 1 - Thread `1` was not the token owner_
+
+Hence the other thread finishes in finite steps. Then there are two possible scenarios:
 
 1. The next loop cycle comes before thread `1` becomes active again. Since the loop checks if the other thread is passive, it will exit in the next cycle (because `active[0]` becomes false).
 2. It is also possible that thread `1` becomes active again between two loop cycles. In this case there are two possible scenarios:
-   1. Thread `1` exited the previous selection w/o taking the token. In this case it will wake up thread `0` in section 3.1, in finite steps, hence the loop exits (because `wait[0]` becomes false).
-   1. Thread `1` exited the previous selection by taking the token, ie. it became the new token owner. Since neither thread would change token ownership again until thread `0` is in the wait loop and the loop itself checks whether the token ownership changed, the loop will exit in the next cycle (because `token == 0` becomes false).
+   1. Thread `1` exited the previous selection w/o taking the token. In this case it will wake up thread `0` in section 3.1, in finite steps, hence the loop exits (because `wait[0]` became false and not yet changed back to true).
+   1. Thread `1` exited the previous selection by taking the token, ie. it became the new token owner. Neither thread would change the token ownership again until thread `0` is in the wait loop. Why beacuse the thread `1` will enter the loop itsel. Since the wait loop checks whether the token ownership changed, the loop will exit (because `token == 0` became false).
+
+_Case 2 - Thread `1` was the token owner_
+
+Thread `0` is token owner and detects thread `1` who is also token owner. This could happen in only one case: in section 4.2 thread `1` has already gave up the token ownership but has not marked itself passive. Why? (Since both threads is token owner, someone must have changed and gave up ownership. However during the period of Section 1 - Section 3.2, thread `0` does not change token ownership. Hence the token ownership must have been changed by thread `1`).
+
+So thread `1` gave up its ownership in section 4.2 and will clearly terminate in finite steps. Then the situation will continue as in Case 1.
+
 
 ### Application protocol ###
 
-In order to use the protocol to execute critical sections it must be extended in some way. The extended protocol works like this:
+In order to use the protocol to execute critical sections it must be extended in some way. This works like this:
 
 During the selection period (while the thread is selected) the thread can execute some injected code (closure or kinda). The pseudo code is the following:
 
@@ -180,7 +192,7 @@ During the selection period (while the thread is selected) the thread can execut
 
 , where `block` is a black box function (closure or such) injected into the selection protocol.
 
-The extended Select 2 protocol is safe and wait-free in the following manner:
+The extended `select2` protocol is safe and wait-free in the following manner:
 
 ### Application protocol features ###
 
