@@ -17,7 +17,7 @@ public abstract class AbstractSelect2{
 	public AbstractSelect2(Thread[] threads){
 		threadIds = new long[2];
 		for (int i = 0; i<2;i++){
-			threadIds[i] = threads[i].getId();threads[i].getId();
+			threadIds[i] = threads[i].getId();
 		}
 	}
 

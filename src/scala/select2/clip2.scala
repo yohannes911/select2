@@ -40,7 +40,7 @@ package select2{
 		}
 	}
 
-	object Clip2{
+	object Clip2{ 
 		def apply(threadIds: Array[Long]) = new Clip2(threadIds)
 		
 		def apply[T <: Thread](threads: Array[T]): Clip2 = {
