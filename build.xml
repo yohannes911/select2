@@ -42,7 +42,7 @@
 		<mkdir dir="${dist}/lib"/>
 		
 		<!-- package classes -->
-		<jar jarfile="${dist}/lib/${lang}-mt.jar" basedir="${build}"/>
+		<jar jarfile="${dist}/lib/${lang}-select.jar" basedir="${build}"/>
 		
 		<delete dir="${build}"/>
 	</target>

@@ -272,6 +272,8 @@ To build both the Java and the Scala API and package them into `dist/lib`, issue
 
     > ant
 
+This will compile both implementations and package them into `java-select.jar` and `scala-select.jar`
+
 To build just the Java API:
 
     > ant java-dist
@@ -296,7 +298,7 @@ Note that the test is a simplified one, is far from covering all possible, concu
 
 To run some test scenarios issue the following or such:
 
-    java -cp lib/java-mt.jar select2.debug.DebugSelect2 -a 4 
+    java -cp lib/java-select.jar select2.debug.DebugSelect2 -a 4 
 
 This will test `2 ^ 4 - 2 = 14` possible concurent scenarios. Such a scenario looks like this: `0010` which means that:
  
@@ -310,7 +312,7 @@ Note that theoretically there are `2 ^ 4 = 16` such 4-length scenarios. However 
 
 The above command will run one round, that is it terminates if each thread ran the protocol (at least) once. If you want more rounds, issue this or such:
 
-    java -cp lib/java-mt.jar select2.debug.DebugSelect2 -a 2 4 
+    java -cp lib/java-select.jar select2.debug.DebugSelect2 -a 2 4 
 
 The above will run all possible 4-length scenarios, however it will only terminate if each thread ran the protocol (at least) twice.
 
@@ -320,21 +322,21 @@ For larger scenarios running all combinations might be very time consuming. For 
 
 For instance to run random 40-length scenarios 10 times, issue:
 
-    java -cp lib/java-mt.jar select2.debug.DebugSelect2 -r 10 40
+    java -cp lib/java-select.jar select2.debug.DebugSelect2 -r 10 40
 
 If each thread has to run the protocol at least 3 times, then issue:
 
-    java -cp lib/java-mt.jar select2.debug.DebugSelect2 -r 10 3 40
+    java -cp lib/java-select.jar select2.debug.DebugSelect2 -r 10 3 40
 
 #### Specific scenario ####
 
 Finally if you have a specific scenario, say `01001110110`, then issue:
 
-    java -cp lib/java-mt.jar select2.debug.DebugSelect2 -m 01001110110
+    java -cp lib/java-select.jar select2.debug.DebugSelect2 -m 01001110110
 
 or 
 
-    java -cp lib/java-mt.jar select2.debug.DebugSelect2 -m 10 01001110110
+    java -cp lib/java-seletc.jar select2.debug.DebugSelect2 -m 10 01001110110
 
 in order to run 10 rounds in each thread.
 
@@ -377,7 +379,7 @@ In my machine the custom, `volatile` based implementation runs 2-3x faster then 
 
 To run the benchmark, issue the following or such:
 
-    java -cp lib/java-mt.jar select2.bench.SimpleBenchSelect2 1000
+    java -cp lib/java-select.jar select2.bench.SimpleBenchSelect2 1000
 
 This will run 10 test cycles and in each cycle it will run both implementations 1000 times.
 
@@ -398,6 +400,17 @@ The clipboard follows the following protocol:
 * also if an object is `popped` then no more object could be `popped` until a new one is `pushed` onto the clipboard
 
 The clipboard builds upon `select2` in order to implement the above protocol. Hence it is thought to be wait-free and thread safe. However since it is a demo of the `select2` protocol it can handle only 2 threads and not more.
+
+To run a simple demo issue:
+
+    java -cp lib/java-select.jar select2.Clip2
+
+This will run 2 threads - one for pushing 10 objects, the other for popping 10 ones. 
+
+In order to to run more rounds, say 100, issue:
+
+    java -cp lib/java-select.jar select2.Clip2 100
+
 
 TODO
 -------------------------------------------------------------------------------
