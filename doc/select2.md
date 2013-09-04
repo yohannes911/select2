@@ -448,7 +448,7 @@ Other tasks:
 
 * More rigid, formal proof (based upon some formal model, probably [I/O automaton](http://en.wikipedia.org/wiki/I/O_automaton))
 * More testing and benchmarking
-* Handle more than 2 threads (ie. `selectN`)
+* Handle more than 2 threads
 * More demos
 * Implement other primitives in the 'Select-style', such as: increment/decrement, ring buffer
 
