@@ -335,9 +335,9 @@ As you might see the test is far from being perfect, it can be enchanced in seve
 
 ### Benchmark ###
 
-A microbenchmark is implemented for the Java version. See `src/java/bench`.
+A simple microbenchmark is implemented for the Java version to gain some preliminary insigts. See `src/java/bench`.
 
-The `select2` application service was reimplemented based upon the Java-builtin synchronization primitive: `compare and set` (`CAS`). That is to say this code implements the `select2` features but uses a different algorithm and is based on a different synchronization primitive: `AtomicInteger`.
+The `select2` application service was reimplemented based upon the Java-builtin synchronization primitive: `compare and set` (`CAS`). That is to say this code implements the `select2` features but uses a different algorithm and is based on a different synchronization primitive, uses the `CAS`-based `AtomicInteger` class built into Java.
 
 The microbenchmark compares the custom `volatile` based implementation with the above `CAS` based one. The early results seem promising:
 
@@ -348,6 +348,8 @@ To run the benchmark, issue the following or such:
     java -cp lib/java-mt.jar select2.bench.SimpleBenchSelect2 1000
 
 This will run 10 test cycles and in each cycle it will run both implementations 1000 times.
+
+Note that this is just a simple, preliminary benchmark, kinda checkpoint just to see whether to move on:-) Stronger and more extensive benchmarks will be necessary, when the protocol will be implemented to handle more than 2 threads.
 
 ### Demo ###
 
