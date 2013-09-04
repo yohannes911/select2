@@ -306,11 +306,31 @@ or
 
 in order to run 10 rounds in each thread.
 
+#### Steps ####
+
+As said, scenarios are built upon (quasi-elementary) steps. In each round a thread is selected (according the current scenario) and executes a step.
+
+The current debug implementation uses the following steps:
+
+1. `MARK_ACTIVE` - statement 1. when thread marks itself as active 
+2. `IS_OWNER` - statement 2. when thread checks whether it is the token owner
+3. `OWNER_ACTIVE` - block 3.1 when thread detects that the other thread, the token owner is active and exits 
+4. `WAIT_CONDITION` - the wait condition in block 3.1 when the token owner thread detects that the other thread is active, goes onto the wait loop
+5. `LOST_OWNERSHIP` - block 4.1 when the token owner detects that it lost ownership, hence exits
+6. `OWNER_SELECTED` - block 4.2 when the token owner thread is selected
+7. `NOT_OWNER_SELECTED` - block 4.3 when the other thread is selected, the one which is not the token owner
+
+As you might see the test is far from being perfect, it can be enchanced in several ways:
+
+1. More steps could be defined to cover all Java statements not just blocks.
+2. Go down and test at the machine level (which would be a hard stuff for me:-) but might be easy for others)
+3. Test in a truely parallel way. The current tests are deterministic ones, where elementary 'steps' are executed sequentally. However in multiprocessor environments even elementary steps might be executed in parallel. This direction leads to non-deterministic tests.
+
 #### Checklist ####
 
-* You shouldn't see any `assertion error`, which would mean that two threads were simultaneously selected
-* None of the threads should wait 'forever' (see lines containing `WAIT_CONDITION`)
-* At the end of the test you should see at least as many selections as the number of scenarios multipled by the number of rounds: `number of selections > number of scenarios * rounds`
+* You shouldn't see any `assertion error` - otherwise it would mean that two threads were simultaneously selected, hence the safety feature is broken
+* None of the threads should wait 'forever' - otherwise it would mean that a thread blocks, hence the wait-free feature is broken (look at repeating lines of `WAIT_CONDITION`)
+* At the end of the test you should see at least as many selections as the number of scenarios multipled by the number of rounds: `number of selections > number of scenarios * rounds` - why? in each round of a scenario at least one thread must be selected, hence if you see less selections then it shows there's some problem with the implementation
 
 
 ### Benchmark ###
