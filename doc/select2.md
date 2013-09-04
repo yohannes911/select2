@@ -7,14 +7,14 @@ Summary
 
 ### Protocol ###
  
-**The `select2` synchronization primitive is a wait-free protocol, that selects one and only one thread from 2 threads** (thats why it is called `select2`). The core protocol provides the following guarantees:
+**The `select2` synchronization primitive is a [wait-free](http://en.wikipedia.org/wiki/Lock-free_and_wait-free_algoritms) protocol, that selects one and only one thread from 2 threads** (thats why it is called `select2`). The core protocol provides the following guarantees:
 
 * **safe**: one and only one thread is selected at any time
 * **wait-free**: the selection protocol eventually terminates (ie. in finite steps)
 
 **The primitive can be used to safely execute critical sections.** The application protocol provides similar guarantees as the core one: it can be used to execute critical sections with the following guarantees:
 
-* **safe**: one and only one code is executed at any time (ie. does not occur parallel execution)
+* **safe**: one and only one code is executed at any time (it follows that parallel execution never happens)
 * **wait-free**: if the code injected to the thread is wait-free then the whole thread is wait-free, will eventually terminate
 
 ### Implementation ###
@@ -26,7 +26,7 @@ The application protocol is **implemented in both Java and Scala.**
 I'm not sure whether the API is of any interest, but here are some thoughts:
 
 * *Soft synchronization primitive*: I'm not a system/JVM engineer hence I'm not sure, just guess that the API, ie. `volatile` doesn't build upon hardware support (ie. CAS). Someone should verify this:-)
-* *Java 1.4- support*: As far as I see the API could be extended to work with earlier Java versions prior to 1.5. Since `atomic values` appeared in v.1.5 the API could be useful for earlier Java versions in order to implement lock-free algorithms.
+* *Java 1.4- support*: As far as I see the API could be extended to work with earlier Java versions prior to 1.5. Since `atomic values` appeared in v.1.5 the API could be useful for earlier Java versions in order to implement lock-free algoritms.
 * *Promising benchmarks*: The early benchmark results are promising:-) (see details below).
 
 ### Status ###
@@ -261,7 +261,7 @@ The behaviour of `volatile` [was changed in Java 1.5](http://www.cs.umd.edu/~pug
 
 > Under the old memory model, accesses to volatile variables could not be reordered with each other, but they could be reordered with nonvolatile variable accesses.
 
-This means that the protocol might not work in earlier Java versions. Note  that the algorithm uses only one non-volatile, stack variable: `token_owner`. Hence a fix might be the change of that variable to volatile, ie. instead of the `boolean token_owner` stack variable use `volatile int[] token_owner` member field. However no such fix is currently implemented, hence the current code is only for Java v1.5+.
+This means that the protocol might not work in earlier Java versions. Note  that the algoritm uses only one non-volatile, stack variable: `token_owner`. Hence a fix might be the change of that variable to volatile, ie. instead of the `boolean token_owner` stack variable use `volatile int[] token_owner` member field. However no such fix is currently implemented, hence the current code is only for Java v1.5+.
 
 ### Build ###
 
@@ -368,7 +368,7 @@ As you might see the test is far from being perfect, it can be enchanced in seve
 
 A simple microbenchmark is implemented for the Java version to gain some preliminary insights. See `src/java/bench`.
 
-The `select2` application service was reimplemented based upon the Java-builtin synchronization primitive: `compare and set` (`CAS`). That is to say this code implements the `select2` features but uses a different algorithm and is based on a different synchronization primitive, uses the `CAS`-based `AtomicInteger` class built into Java.
+The `select2` application service was reimplemented based upon the Java-builtin synchronization primitive: `compare and set` (`CAS`). That is to say this code implements the `select2` features but uses a different algoritm and is based on a different synchronization primitive, uses the `CAS`-based `AtomicInteger` class built into Java.
 
 The microbenchmark compares the custom `volatile` based implementation with the above `CAS` based one. The early results seem promising:
 
@@ -407,7 +407,16 @@ The most important one:
 
 Other tasks:
 
+* More rigid, formal proof (based upon some formal model, probably [I/O automaton](http://en.wikipedia.org/wiki/I/O_automaton))
 * More testing and benchmarking
-* Handle more than 2 threads
+* Handle more than 2 threads (ie. `selectN`)
 * More demos
 * Implement other primitives in the 'Select-style', such as: increment/decrement, ring buffer
+
+References
+-------------------------------------------------------------------------------
+
+
+* [Non-blocking algoritm](http://en.wikipedia.org/wiki/Non-blocking_algorithm)
+* [I/O automaton](http://en.wikipedia.org/wiki/I/O_automaton)
+* [JSR 133 (Java Memory Model) FAQ](http://www.cs.umd.edu/~pugh/java/memoryModel/jsr-133-faq.html)
