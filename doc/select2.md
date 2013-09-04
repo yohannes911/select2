@@ -135,7 +135,9 @@ Here by _token owner_ I mean that `token_owner` is true.
 
 _Case 1 - Both thread is token owner_:
 
-This means that both thread executed the above 4.2. section. Let thread `0` be the one who executed token check (section 2) first. At that time thread `0` was the token owner. Hence this means that thread `1` executed the token check (section 2), after thread `0` gave up token ownership, however at that point thread `0` was already unselected. Contradiction.
+This means that both thread executed the above 4.2. section, hence at that time (when starting 4.2 section) both  `token_owner` and `token == i` was true for each thread. 
+
+Assume that thread `0` entered section 4.2. first, it means that `token == 0` was true before thread `1` entered section 4.2. Since (due to the indirect assumption) thread `0` was selected when thread `1`, it did not `selected[0] = false` before thread `1` entered section 4.2. Hence `token == 1` was false when thread `1` reached section 4.2., hence could not enter it to be selected. Contradiction.
 
 _Case 2 - None of the threads is token owner_:  
 
@@ -147,7 +149,8 @@ Then one of the threads, say thread `0` is the token owner, hence executed 4.2. 
 Again, due to the following lemma, one of the threads should have detected that the other one is active in section 3.1. Two cases might happen:
 
 1. If thread `1` detected thread `0` as active than it exited since it was not the token owner, hence was not selected. Contradiction.
-1. If thread `1` did not detect thread `0` as active, than thread `0` detected thread `1`. Since thread `0` is the token owner it goes into the wait loop untill thread `1` is selected and takes the token ownership (in section 3.2). However this means that thread `0` either does not run section 4.2. instead it runs 4.1, hence is not selected or thread `0` does not run section 4.2 until thread `1` is unselected, hence they are not selected in parallel. Contradiction.
+1. If thread `1` did not detect thread `0` as active, than thread `0` detected thread `1`. Since thread `0` was the token owner it went into the wait loop, slept sometime then woke up and was selected. Also since thread `1` did not detect thread `0` it did not wake up thread `0` in section 3.1 instead it went on and executed section 4.3. This is contradiction since  in this scenario thread `0` woke up only after thread `1` was unselected and became passive.
+
 
 The following lemma is applicable beacuse if (indirectly) both thread is  selected at some point in time, then (1) both thread is active and (2) already executed the checks. Hence the lemma conditions are true.
 
