@@ -1,4 +1,4 @@
-select2 synchronization primitve
+select2 synchronization primitive
 ===============================================================================
 
 
