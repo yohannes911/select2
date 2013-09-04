@@ -250,6 +250,8 @@ To build just the Scala API:
 
     > ant scala-dist 
 
+See `build.xml` for more details.
+
 ### Code quality ###
 
 The API is experimental. Especially the Java API is more extensively tested then the Scala one.
