@@ -119,23 +119,23 @@ Proof: Indirectly assume, that at some point in time both thread is selected. Th
 1. None of the threads is token owner
 1. One of the threads is token owner the other is not
 
+Here by _token owner_ I mean that `token_owner` is true.
+
 _Case 1 - Both thread is token owner_:
 
 This means that both thread executed the above 4.2. section. Let thread `0` be the one who executed token check (section 2) first. At that time thread `0` was the token owner. Hence this means that thread `1` executed the token check (section 2), after thread `0` gave up token ownership, however at that point thread `0` was already unselected. Contradiction.
 
 _Case 2 - None of the threads is token owner_:  
 
-This cannot happen, since one of the threads must fail on rule 3.1. when threads check whether other thread is active or not. Due to the following lemma one of the threads detects that the other one is active and since it is not the token owner, it exits. Contradiction.
+Due to the following lemma one of the threads detects that the other one is active. Since it is not the token owner, it exits, hence it is not selected. Contradiction.
 
 _Case 3 - One of the threads is token owner the other is not_
 
-Then one of the threads, say thread `0` is the token owner, hence executes the 4.2. section. Meanwhile, the other thread, say thread `1` executes section 4.3.
-Again, due to the following lemma, one of the threads should have detected that the other one is active in section 3.1.:
+Then one of the threads, say thread `0` is the token owner, hence executed 4.2. section when selected. Meanwhile, the other thread, thread `1` executed section 4.3.
+Again, due to the following lemma, one of the threads should have detected that the other one is active in section 3.1. Two cases might happen:
 
-1. If thread `1` detected thread `0` as active than it exited since it was not the token owner.
-1. If thread `1` did not detect thread `0` as active, than thread `0` detected thread `1`. Since thread `0` was token owner it waited till thread `1` took the token ownership (in section 3.2) and than it did not run 4.2. section instead 4.1. 
-
-Contradiction.
+1. If thread `1` detected thread `0` as active than it exited since it was not the token owner, hence was not selected. Contradiction.
+1. If thread `1` did not detect thread `0` as active, than thread `0` detected thread `1`. Since thread `0` is the token owner it goes into the wait loop untill thread `1` is selected and takes the token ownership (in section 3.2). However this means that thread `0` either does not run section 4.2. instead it runs 4.1, hence is not selected or thread `0` does not run section 4.2 until thread `1` is unselected, hence they are not selected in parallel. Contradiction.
 
 
 **Lemma: If two threads run in parallel than one of the threads detects that the other is active in section 3. Formally:** 
