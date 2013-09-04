@@ -115,9 +115,12 @@ Assume that thread `i` enters the selection (`i = 0 or 1`). Then the pseudo code
 **Statement 1: `select2` is safe in the following manner: the protocol guarantees that one and only one thread is selected at any time.** Formally: 
 
 1. At most one thread is selected, ie. `selected[0] and selected[1]` is always false
-2. At least one thread is selected, ie. if a thread is active at any point in time, then either this thread or the other will be selected, ie.:
- if `active[0] and active[1]` then `selected[0] or selected[1]` will happen.
+2. At least one thread is selected, ie. if a thread is active at any point in time, then either this or the other thread is selected. More precisely:
+   1. only one thread is active then it will be selected, formally: if `active[i] and not active[i+1]` until the thread `i` exits then `selected[i]` will happen.
+   1. if both thread is active then at least one of them is selected, formally: if `active[i] and active[i]` at some point in time then `selected[i] or selected [i+1]` will happen.
 
+Note that the above does not mean that it is impossible that both thread is selected one after the other. It is in fact possible (the proof is left to the reader:-)). The thing which is impossible is that they are selected at the same time.
+ 
 Proof: 
 
 **at most one selected**: Indirectly assume, that at some point in time both thread is selected. There are 3 possible cases:
@@ -146,15 +149,10 @@ Again, due to the following lemma, one of the threads should have detected that 
 
 The following lemma is applicable beacuse if (indirectly) both thread is  selected at some point in time, then (1) both thread is active and (2) already executed the checks. Hence the lemma conditions are true.
 
-**at least one selected** this formally means:
+**at least one selected**: The first case is evident, ie. when only one thread is active, then obviously it will be selected. Otherwise if the threads run in parallel and one of them is not selected, then:
 
-1. If the other thread is not active during this thread's execution, then this thread will be selected.
-1. If two threads are active at any point in time then one of them them will be selected: 'if not this then that'
-
-The 1. is evident. Otherwise if the threads run in parallel, and one of them is not selected, then:
-
-* if the not selected thread exits at section 3.1, it means that the other one is active, it is the token owner and will be selected in section 4.2
-* if the thread exits at section 4.1, it means that it was the token owner, but lost its ownership, hence the other thread is selected.
+* if the non-selected thread exits at section 3.1, it means that the other one is active, it is the token owner and will be selected in section 4.2
+* if the non-selected thread exits at section 4.1, it means that it was the token owner, but lost its ownership, hence the other thread is selected.
 
 
 **Lemma: If two threads run in parallel than one of the threads detects that the other is active in section 3. Formally:** 
@@ -300,7 +298,7 @@ There are some empirical evidences that the Java API works, not just the above f
 
 To run some test scenarios issue the following or such:
 
-    java -cp lib/java-select.jar select2.debug.DebugSelect2 -a 4 
+    java -ea -cp lib/java-select.jar select2.debug.DebugSelect2 -a 4 
 
 This will test `2 ^ 4 - 2 = 14` possible concurent scenarios. Such a scenario looks like this: `0010` which means that:
  
@@ -314,7 +312,7 @@ Note that theoretically there are `2 ^ 4 = 16` such 4-length scenarios. However 
 
 The above command will run one round, that is it terminates if each thread ran the protocol (at least) once. If you want more rounds, issue this or such:
 
-    java -cp lib/java-select.jar select2.debug.DebugSelect2 -a 2 4 
+    java -ea -cp lib/java-select.jar select2.debug.DebugSelect2 -a 2 4 
 
 The above will run all possible 4-length scenarios, however it will only terminate if each thread ran the protocol (at least) twice.
 
@@ -324,21 +322,21 @@ For larger scenarios running all combinations might be very time consuming. For 
 
 For instance to run random 40-length scenarios 10 times, issue:
 
-    java -cp lib/java-select.jar select2.debug.DebugSelect2 -r 10 40
+    java -ea -cp lib/java-select.jar select2.debug.DebugSelect2 -r 10 40
 
 If each thread has to run the protocol at least 3 times, then issue:
 
-    java -cp lib/java-select.jar select2.debug.DebugSelect2 -r 10 3 40
+    java -ea -cp lib/java-select.jar select2.debug.DebugSelect2 -r 10 3 40
 
 ##### Specific scenario #####
 
 Finally if you have a specific scenario, say `01001110110`, then issue:
 
-    java -cp lib/java-select.jar select2.debug.DebugSelect2 -m 01001110110
+    java -ea -cp lib/java-select.jar select2.debug.DebugSelect2 -m 01001110110
 
 or 
 
-    java -cp lib/java-seletc.jar select2.debug.DebugSelect2 -m 10 01001110110
+    java -ea -cp lib/java-seletc.jar select2.debug.DebugSelect2 -m 10 01001110110
 
 in order to run 10 rounds in each thread.
 
@@ -458,6 +456,6 @@ References
 -------------------------------------------------------------------------------
 
 
-* [Non-blocking algoritm](http://en.wikipedia.org/wiki/Non-blocking_algorithm)
-* [I/O automaton](http://en.wikipedia.org/wiki/I/O_automaton)
+* [Wikipedia: Non-blocking algoritm](http://en.wikipedia.org/wiki/Non-blocking_algorithm)
+* [Wikipedia: I/O automaton](http://en.wikipedia.org/wiki/I/O_automaton)
 * [JSR 133 (Java Memory Model) FAQ](http://www.cs.umd.edu/~pugh/java/memoryModel/jsr-133-faq.html)
