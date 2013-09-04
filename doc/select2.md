@@ -119,7 +119,7 @@ Assume that thread `i` enters the selection (`i = 0 or 1`). Then the pseudo code
 
 Proof: 
 
-**at most one is selected**: Indirectly assume, that at some point in time both thread is selected. There are 3 possible cases:
+**at most one selected**: Indirectly assume, that at some point in time both thread is selected. There are 3 possible cases:
 
 1. Both thread is token owner
 1. None of the threads is token owner
@@ -145,7 +145,7 @@ Again, due to the following lemma, one of the threads should have detected that 
 
 Note that the lemma is applicable beacuse if (indirectly) both thread is  selected at some point in time, then (1) both thread is active and (2) already executed the checks. Hence the lemma conditions are true.
 
-**at least one is selected** this formally means:
+**at least one selected** this formally means:
 
 1. If the other thread is not active during this thread's execution, then this thread will be selected.
 1. If two threads are active at any point in time then one of them them will be selected: 'if not this then that'
