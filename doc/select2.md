@@ -47,6 +47,7 @@ The protocol uses the following fields:
 
 * `active: boolean[2]` - marks whether thread `0` or `1` is active (entered the selection protocol)
 * `token: 0..1` - only that thread can be chosen who owns the token (ie. thread `0` can be chosen if `token == 0`)
+* `token_owner` - marks whether thread was the token owner when entered the selection (ie. for thread `0` it is equivalent with `token[0] == 0` at the point when it started executin the selection) 
 * `selected: boolean[2]` - marks whether thread `0` or `1` is selected
 * `wait: boolean[2]` - marks whether thread `0` or `1` is waiting
 
