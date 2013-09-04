@@ -170,11 +170,13 @@ Hence the other thread finishes in finite steps.
 
 _Case 2 - Thread `1` was the token owner_
 
-Thread `0` is the token owner and detected thread `1` who is also token owner. This could happen in only one case: in section 4.2 thread `1` has already gave up the token ownership but has not marked itself passive. Why? (Since both threads is token owner, someone must have changed and gave up ownership. However during the period of Section 1 - Section 3.2, thread `0` does not change token ownership. Hence the token ownership must have been changed by thread `1`).
+Thread `0` is the token owner and detected thread `1` who is also token owner. This could happen in only one case: in section 4.2 thread `1` has already gave up the token ownership but has not marked itself passive.  
 
-So thread `1` gave up its ownership in section 4.2 and will clearly terminate in finite steps. Then the situation will continue as in Case 1.
+(Why? Since both threads is token owner, someone must have changed and gave up ownership. However during the period of Section 1 - Section 3.2, thread `0` does not change token ownership. Hence the token ownership must have been changed by thread `1`).
 
-So in each case the other thread, thread 1` terminates in finite steps after it was detected active by thread `0`.  Then there are two possible scenarios:
+So thread `1` gave up its ownership in section 4.2, hence it will clearly terminate in finite steps.
+
+So in each case the other thread, thread `1` terminates in finite steps after it was detected active by thread `0`.  Then there are two possible scenarios:
 
 1. The next loop cycle comes before thread `1` becomes active again. Since the loop checks if the other thread is passive, it will exit in the next cycle (because `active[1]` becomes false).
 2. It is also possible that thread `1` becomes active again between two loop cycles. In this case there are two possible scenarios:
