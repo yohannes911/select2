@@ -23,6 +23,8 @@ The application protocol is **implemented in both Java and Scala.**
 
 **Both API builds upon the Java-builtin primitive: `volatile`.** Otherwise it does not use anything else, especially **it does not use either `synchronization` or `atomic values`**.
 
+### Application ###
+
 I'm not sure whether the API is of any interest, but here are some thoughts:
 
 * *Soft synchronization primitive*: I'm not a system/JVM engineer hence I'm not sure, just guess that the API, ie. `volatile` doesn't build upon hardware support (ie. CAS). Someone should verify this:-)
