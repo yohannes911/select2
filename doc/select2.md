@@ -216,7 +216,7 @@ Implementation
 
 ### Platforms ###
 
-The protocol is currently implemented in Java and Scala - see the `Select2` class in `src/java` and `src/scala`. 
+The protocol is currently implemented in Java and Scala - see the `Select2` class under `src/java` and `src/scala`. 
 
 ### Implementation logic ###
 
@@ -233,6 +233,22 @@ The behaviour of `volatile` [was changed in Java 1.5](http://www.cs.umd.edu/~pug
 > Under the old memory model, accesses to volatile variables could not be reordered with each other, but they could be reordered with nonvolatile variable accesses.
 
 This means that the protocol might not work in earlier Java versions. Note  that the algorithm uses only one non-volatile, stack variable: `token_owner`. Hence a fix might be the change of that variable to volatile, ie. instead of the `boolean token_owner` stack variable use `volatile [int] token_owner` member field. However no such fix is currently implemented, hence the current code is only for Java v1.5+.
+
+### Build ###
+
+You can either build by hand:) ie. by using javac and scalac. To make life simpler an ant script is provided as well. Assuming that your environments is configured properly, you can execute build tasks as follows.
+
+To build both the Java and the Scala API and package them to `dist/lib`, issue the following:
+
+    > ant
+
+To build just the Java API:
+
+    > ant java-dist
+
+To build just the Scala API:
+
+    > ant scala-dist 
 
 ### Code quality ###
 
@@ -336,20 +352,9 @@ The most important one:
 
 **External revisions are necessary both for the proof and the API. Any feedback is highly appreciated! :-)**
 
-### Protocol ###
+Other tasks:
 
-* Revise the proof of Statement 1:
-  * according to lemma changes
-  * clarify this: token owner has two meanings: `token == i` at any time and `token_owner is true` - the two might not be the same  
-* Revise the proof assuming multiprocessor env
-
-### API ###
-
-* More testing and 
-benchmarking
+* More testing and benchmarking
 * More demos
-
-### Extensions ###
-
-* Handle more threads
+* Handle more than 2 threads
 * Implement other primitives in the 'Select-style', such as: increment/decrement, ring buffer
