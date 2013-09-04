@@ -31,9 +31,9 @@ I'm not sure whether the API is of any interest, but here are some thoughts:
 
 ### Status ###
 
-Both the theoretical protocol and the API is in its **infancy**. As of this writing it is 3 days old:-)
+Both the theoretical protocol and the API is in its **infancy**. As of this writing it is 1 week old:-) It requires **external revision**. 
 
-Both of them requires **external revisions**. Any feedback is greatly appriciated:-)
+Any feedback is greatly appriciated!:-)
 
 Protocol specification
 -------------------------------------------------------------------------------
@@ -335,7 +335,7 @@ As you might see the test is far from being perfect, it can be enchanced in seve
 
 ### Benchmark ###
 
-A simple microbenchmark is implemented for the Java version to gain some preliminary insigts. See `src/java/bench`.
+A simple microbenchmark is implemented for the Java version to gain some preliminary insights. See `src/java/bench`.
 
 The `select2` application service was reimplemented based upon the Java-builtin synchronization primitive: `compare and set` (`CAS`). That is to say this code implements the `select2` features but uses a different algorithm and is based on a different synchronization primitive, uses the `CAS`-based `AtomicInteger` class built into Java.
 
@@ -365,7 +365,7 @@ The clipboard follows the following protocol:
 * after `pushing` an object no more object can be `pushed` till the current one is `popped`
 * also if an object is `popped` then no more object could be `popped` until a new one is `pushed` onto the clipboard
 
-The clipboard is wait-free and thread safe. However since it is a demo of the `select2` protocol it can handle only 2 threads and not more.
+The clipboard builds upon `select2` in order to implement the above protocol. Hence it is thought to be wait-free and thread safe. However since it is a demo of the `select2` protocol it can handle only 2 threads and not more.
 
 TODO
 -------------------------------------------------------------------------------
