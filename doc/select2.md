@@ -220,9 +220,7 @@ The protocol is currently implemented in Java and Scala - see the `Select2` clas
 
 ### Implementation logic ###
 
-The code builds upon the Java-builtin synchronization primitive: `volatile` and nothing else. Especially it does not use either `synchronization` or `atomic values`.
-
-Note that the above means that the API (with some possible modifications) might be used for earlier versions of Java prior to 1.5. Some modifications might be necessary since the behaviour of `volatile` changed in Java 1.5.
+The code builds upon the Java-builtin synchronization primitive: `volatile` and nothing else. Especially it does not use either `synchronization` or `atomic values`. (This also means that the API (with some possible modifications) might be used for earlier versions of Java prior to 1.5. Some modifications might be necessary since the behaviour of `volatile` changed in Java 1.5.)
 
 As said the Java implementation builds upon the Java-builtin `volatile` primitive. All protocol fields except `token_owner` is defined as `volatile`. To my understanding this ensures that the protocol steps cannot be reordered by the compiler, hence the protocol works.
 
