@@ -357,6 +357,6 @@ The most important one:
 Other tasks:
 
 * More testing and benchmarking
-* More demos
 * Handle more than 2 threads
+* More demos
 * Implement other primitives in the 'Select-style', such as: increment/decrement, ring buffer
