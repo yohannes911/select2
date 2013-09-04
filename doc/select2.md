@@ -144,7 +144,7 @@ Again, due to the following lemma, one of the threads should have detected that 
 1. If thread `1` detected thread `0` as active than it exited since it was not the token owner, hence was not selected. Contradiction.
 1. If thread `1` did not detect thread `0` as active, than thread `0` detected thread `1`. Since thread `0` is the token owner it goes into the wait loop untill thread `1` is selected and takes the token ownership (in section 3.2). However this means that thread `0` either does not run section 4.2. instead it runs 4.1, hence is not selected or thread `0` does not run section 4.2 until thread `1` is unselected, hence they are not selected in parallel. Contradiction.
 
-Note that the lemma is applicable beacuse if (indirectly) both thread is  selected at some point in time, then (1) both thread is active and (2) already executed the checks. Hence the lemma conditions are true.
+The following lemma is applicable beacuse if (indirectly) both thread is  selected at some point in time, then (1) both thread is active and (2) already executed the checks. Hence the lemma conditions are true.
 
 **at least one selected** this formally means:
 
@@ -235,7 +235,7 @@ This follows from Statement 1: at least one thread is selected which then will e
 
 **never executed in parallel**: When blocks are executed in a thread, that thread must be selected. However due to Statement 1, threads are never selected in parallel, hence blocks are never executed in parallel.
 
-Note that this safety feature just guarantees that critical sections are executed atomically and the system as a whole moves on (at least one section is executed). However it does not guarantee that the block of a given thread will be ever executed. This is where `select2` differs from the Java `synhronization` primitive. Both primitive is safe, however while `synhronization` blocks until execution, `select2` neither blocks nor does it guarentee execution. 
+*Note*: This safety feature just guarantees that critical sections are executed atomically and the system as a whole moves on (at least one section is executed). However it does not guarantee that the block of a given thread will be ever executed. This is where `select2` differs from the Java `synhronization` primitive. Both primitive is safe, however while `synhronization` blocks until execution, `select2` neither blocks nor does it guarentee execution. 
 
 
 **Statement 4: The `select2` application protocol is wait-free in the following manner**: If the block injected to the thread is wait-free then the whole thread will be wait-free as well. In other words: if the thread gets enough processor time then it will eventually terminate.
@@ -292,7 +292,7 @@ The API is experimental. Especially the Java API is more extensively tested then
 
 There are some empirical evidences that the Java API works, not just the above formal proof. The `src/java/debug` package implements a debugable version of the API. With this I've tested thousands of concurent scenarios w/o failure. 
 
-Note that the test is a simplified one, is far from covering all possible, concurent execution paths. The sole purpose of the test is to add some empirical insight/evidence and not to replace the formal proof. Also anyone is welcome to provide a stronger testkit:-)
+*Note*: The test is a simplified one, is far from covering all possible, concurent execution paths. The sole purpose of the test is to add some empirical insight/evidence and not to replace the formal proof. Also anyone is welcome to provide a stronger testkit:-)
 
 #### All scenarios (of specific length) ####
 
@@ -354,7 +354,7 @@ The current debug implementation uses the following steps:
 6. `OWNER_SELECTED` - statement block 4.2 when the token owner thread is selected
 7. `NOT_OWNER_SELECTED` - statement block 4.3 when the other thread is selected, the one which is not the token owner
 
-As you might see the test is far from being perfect, it can be enchanced in several ways:
+*Note*: As you might see the test is far from being perfect, it can be enchanced in several ways:
 
 1. Steps could be defined in a more fine grained manner in order to cover all Java statements not just blocks.
 2. Go down and test at the machine level (which would be a hard stuff for me:-) but might be easy for others).
@@ -383,7 +383,7 @@ To run the benchmark, issue the following or such:
 
 This will run 10 test cycles and in each cycle it will run both implementations 1000 times.
 
-Note that this is just a simple, preliminary benchmark, kinda checkpoint just to see whether to move on:-) Stronger and more extensive benchmarks will be necessary, when the protocol will be implemented to handle more than 2 threads.
+*Note*: This is just a simple, preliminary benchmark, kinda checkpoint just to see whether to move on:-) Stronger and more extensive benchmarks will be necessary, if and when the protocol is implemented to handle more than 2 threads.
 
 ### Demo ###
 
@@ -394,7 +394,7 @@ The clipboard provides the following features:
 * one (thread) can `push` an object to the clipboard which then 
 * can be `popped` (possibly by another thread)
 
-The clipboard follows the following protocol:
+The clipboard uses the following protocol:
 
 * after `pushing` an object no more object can be `pushed` till the current one is `popped`
 * also if an object is `popped` then no more object could be `popped` until a new one is `pushed` onto the clipboard
@@ -405,11 +405,36 @@ To run a simple demo issue:
 
     java -cp lib/java-select.jar select2.Clip2
 
-This will run 2 threads - one for pushing 10 objects, the other for popping 10 ones. 
+This will run 2 threads - one for pushing 10 objects, the other for popping 10 ones. The results printed onto the console. 
 
 In order to to run more rounds, say 100, issue:
 
     java -cp lib/java-select.jar select2.Clip2 100
+
+_Note on message orders:_
+
+Messages might not be printed out in order. To check what's happenning pair pushed objects with popped ones. For instance here's a partial output from an execution:
+
+    ...
+    DEBUG: THREAD-9:	PUSHED	47
+    DEBUG: THREAD-9:	PUSHED	55
+    DEBUG: THREAD-9:	NOT_PUSHED	49
+    DEBUG: THREAD-9:	NOT_PUSHED	70
+    ...
+    DEBUG: THREAD-10:	POPPED	47
+    DEBUG: THREAD-9:	NOT_PUSHED	60
+    DEBUG: THREAD-10:	POPPED	55
+    ...
+
+What happened in real? 
+
+    Thread-9 pushed 47 and it is printed out to console
+    Thread-10 popped 47 but it is printed out just later
+    Thread-9 pushed 55 but then
+    Thread-9 could not push objects till
+    Thread-10 popped 55
+
+The demo later might be enchanced in order to print messages out in order.
 
 
 TODO
