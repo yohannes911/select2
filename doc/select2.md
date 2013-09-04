@@ -262,7 +262,9 @@ The behaviour of `volatile` [was changed in Java 1.5](http://www.cs.umd.edu/~pug
 
 > Under the old memory model, accesses to volatile variables could not be reordered with each other, but they could be reordered with nonvolatile variable accesses.
 
-This means that the protocol might not work in earlier Java versions. Note  that the algoritm uses only one non-volatile, stack variable: `token_owner`. Hence a fix might be the change of that variable to volatile, ie. instead of the `boolean token_owner` stack variable use `volatile int[] token_owner` member field. However no such fix is currently implemented, hence the current code is only for Java v1.5+.
+This means that the protocol might not work in earlier Java versions. 
+
+Note also that the algoritm uses only one non-volatile, stack variable: `token_owner`. Hence a possible fix might be the change of this variable from stack var to a volatile one, ie. instead of the `boolean token_owner` stack variable use the `volatile int[] token_owner` member field. However no such fix is implemented, hence the current code is only for Java v1.5+.
 
 ### Build ###
 
