@@ -218,9 +218,21 @@ Implementation
 
 The protocol is currently implemented in Java and Scala - see the `Select2` class in `src/java` and `src/scala`. 
 
+### Implementation logic ###
+
 The code builds upon the Java-builtin synchronization primitive: `volatile` and nothing else. Especially it does not use either `synchronization` or `atomic values`.
 
 Note that the above means that the API (with some possible modifications) might be used for earlier versions of Java prior to 1.5. Some modifications might be necessary since the behaviour of `volatile` changed in Java 1.5.
+
+As said the Java implementation builds upon the Java-builtin `volatile` primitive. All protocol fields except `token_owner` is defined as `volatile`. To my understanding this ensures that the protocol steps cannot be reordered by the compiler, hence the protocol works.
+
+_Note on earlier Java versions, prior to Java 1.5_: 
+
+The behaviour of `volatile` [was changed in Java 1.5](http://www.cs.umd.edu/~pugh/java/memoryModel/jsr-133-faq.html#volatile):
+
+> Under the old memory model, accesses to volatile variables could not be reordered with each other, but they could be reordered with nonvolatile variable accesses.
+
+This means that the protocol might not work in earlier Java versions. Note  that the algorithm uses only one non-volatile, stack variable: `token_owner`. Hence a fix might be the change of that variable to volatile, ie. instead of the `boolean token_owner` stack variable use `volatile [int] token_owner` member field. However no such fix is currently implemented, hence the current code is only for Java v1.5+.
 
 ### Code quality ###
 
