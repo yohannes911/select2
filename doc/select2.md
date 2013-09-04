@@ -236,9 +236,9 @@ This means that the protocol might not work in earlier Java versions. Note  that
 
 ### Build ###
 
-You can either build by hand:) ie. by using javac and scalac. To make life simpler an ant script is provided as well. Assuming that your environments is configured properly, you can execute build tasks as follows.
+You can build by hand of course, by using `javac` and `scalac`:-) However to make life easier an ant script is provided as well. Assuming that your environment is configured properly, you can execute build tasks as follows:
 
-To build both the Java and the Scala API and package them to `dist/lib`, issue the following:
+To build both the Java and the Scala API and package them into `dist/lib`, issue the following:
 
     > ant
 
