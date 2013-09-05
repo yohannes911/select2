@@ -23,13 +23,6 @@ This protocol is similar to [`select2`](select2.md)), however this version mimic
 
 TODO
 
-### Application ###
-
-I'm not sure whether the API is of any interest, but here are some thoughts:
-
-* *Soft synchronization primitive*: I'm not a system/JVM engineer hence I'm not sure, just guess that the API, ie. `volatile` doesn't build upon hardware support (ie. CAS). Someone should verify this:-)
-* *Promising benchmarks*: The early benchmark results are promising:-) (see details below).
-
 
 Protocol specification
 -------------------------------------------------------------------------------
