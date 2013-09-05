@@ -49,7 +49,7 @@ The protocol uses the following fields:
 
 * `active: boolean[2]` - marks whether thread `0` or `1` is active (entered the selection protocol)
 * `token: 0..1` - only that thread can be chosen who owns the token (ie. thread `0` can be chosen if `token == 0`)
-* `token_owner` - marks whether thread was the token owner when entered the selection (ie. for thread `0` it is equivalent with `token[0] == 0` at the point when it started executin the selection) 
+* `token_owner` - marks whether thread was the token owner when entered the selection (ie. for thread `0` it is equivalent with `token[0] == 0` at the point when it started executing the selection) 
 * `selected: boolean[2]` - marks whether thread `0` or `1` is selected
 * `wait: boolean[2]` - marks whether thread `0` or `1` is waiting
 
@@ -452,7 +452,8 @@ The most important one:
 
 Other tasks:
 
-* More rigid, formal proof (based upon some formal model, probably [I/O automaton](http://en.wikipedia.org/wiki/I/O_automaton))
+* More rigid, formal proof (based upon some formal model)
+* Simplify the protocol, namely the wait condition (sleep on only `wait`) and simplify the proof 
 * More testing and benchmarking
 * Handle more than 2 threads
 * More demos
@@ -463,5 +464,4 @@ References
 
 
 * [Wikipedia: Non-blocking algoritm](http://en.wikipedia.org/wiki/Non-blocking_algorithm)
-* [Wikipedia: I/O automaton](http://en.wikipedia.org/wiki/I/O_automaton)
 * [JSR 133 (Java Memory Model) FAQ](http://www.cs.umd.edu/~pugh/java/memoryModel/jsr-133-faq.html)
