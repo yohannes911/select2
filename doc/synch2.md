@@ -154,7 +154,7 @@ internal events:
 
 #### activate ####
 
-    activate(i): # initial action of a thread'a automaton
+    activate(i): # initial action
 		post_condition: 
 			if state(i) = IDLE
 			    active(i) = true
@@ -167,7 +167,9 @@ internal events:
 		pre_conditions: 
 			state(0) = GUARD
         post_conditions:			
-			if active(1) then state(0) = WAIT
+			if active(1) then 
+                state(0) = WAIT
+                wait(0) = true
 			else state(0) = SELECT
 
     wait(0): # conditional wait of thread 0
@@ -200,6 +202,7 @@ internal events:
 			if active(0) then
 				if not wait(1b)
 					state(1) = WAIT(1a) 
+                    wait(1a) = true
 				else
 					state(1) = WAIT(1b)
 			else 
@@ -214,7 +217,7 @@ internal events:
     
     wokeup(1a) # triggered when thread 1 is waken up from wait1a by thread 0
 		pre_conditions: 
-			state(1) = WAIT(11a)
+			state(1) = WAIT(1a)
 			not wait(1a) or not active(0)
         post_conditions: 
 			state(0) = SELECT
@@ -304,11 +307,11 @@ It's evident that if the thread terminates then it was selected before, formally
 
 Hence it's enough to prove the second statement.
 
-Indirectly assume that either `thread 0` or `thread 1`, never terminates. 
+Indirectly assume that either `thread 0` or `thread 1` never terminates. 
 
 _Case 1 - `thread 0` never terminates_
 
-(1) `thread 0` must be blocked in the `WAIT(0)` loop, namely it will oscillate between state `WAIT` and `WAKEUP(0)` forever, remind that: 
+(1) `thread 0` must be blocked in the `WAIT(0)` loop, namely it will oscillate between state `WAIT` and `WAKEUP(0)` forever. Remind that: 
 
 >     wait(0): # conditional wait of thread 0
 > 		pre_conditions: 
@@ -365,7 +368,7 @@ It cannot be blocked in `WAIT(1a)` since the blocked `thread 0` would eventually
     [WAIT, WAIT(1a)], wait(0), [WAKEUP(0), WAIT(1a)], 
     wakeup(0), [WAIT, WAIT(1a), wait(1a)=false], wokeup(1a)
 
-It cannot always and infinitely enter `WAIT(1a)` since it issues `wait_next(1b)` just before terminating a round. Its history looks like this:
+It cannot always and infinitely enter `WAIT(1a)` since it issues `nextwait(1b)` just before terminating a round, ie. its history is kinda this:
 
 	DESELECT, deselect(1), NEXT_WAIT(1b), next_wait(1b), DEACTIVATE, deactivate(1),...
 
@@ -383,11 +386,7 @@ Remind that:
 > 			wait(1b) = false
 >             state(1) = DEACTIVATE
 
-This means that in the next round it will enter  the `WAIT(1b)` loop, since the blocked `thread 0` won't switch the flag back to `false`.
-	
-	IDLE, activate(1), GUARD, guard(1), WAIT(1b), ...
-
-Remind that:
+This means that in the next round `thread 1` will enter  the `WAIT(1b)` loop, since the blocked `thread 0` won't switch the `wait(1b)` flag back to `false`. Remind that:
 
 >     guard(1): # checks whether thread 0 is active
 > 		pre_conditions:
@@ -401,11 +400,15 @@ Remind that:
 > 			else 
 > 				state(1) = SELECT
 
-Contradiction.
+Hence `thread 1` will enter `WAIT(1b)`:
+
+	IDLE, activate(1), GUARD, guard(1), WAIT(1b), ...
+
+From (1, 2, 3, 4) contradiction follows.
 
 _Case 2 - `thread 1` never terminates_
 
-The thread must be either blocked in the `WAIT(1a)` loop or in the `WAIT(1b)` one. None of them could happen. It cannot be blocked in `WAIT(1a)` for ever, since either `thread 0` will eventually wake it up if it becomes active again (see `wakeup(1)`), or the `not active(0)` condition would trigger a wake up, if `thread 0` remains deactivated (see `wokeup(1)`). The same applies to `WAIT(1b)`. Contradiction.
+The thread must be either blocked in the `WAIT(1a)` loop or in the `WAIT(1b)` one. None of them could happen. It cannot be blocked in `WAIT(1a)` forever, since either `thread 0` will eventually wake it up if it becomes active again (see `wakeup(1)`), or the `not active(0)` condition would trigger a wake up, if `thread 0` remains deactivated (see `wokeup(1)`). The same applies to `WAIT(1b)`. Contradiction.
 
 It is left to the reader to prove that `synch2` is not just wait-free but is **strongly wait-free**, ie. the steps necessary to terminate is not just finite, but is bounded.
 
@@ -444,7 +447,7 @@ hence `thread 1` detected `thread 0` as active and went into its wait loop:
 hence `activate(0) < guard(1) < wait(1j)`.
 
 
-The proof of Theorem 2 is an indirectional one. Here we prove two further lemmas that is a result of the indirect assumption:
+The proof of Theorem 2 is an indirectional one. Here we prove two further lemmas that would be the result of the indirect assumption:
 
 **Lemma 2: if both thread is selected and one of them was in a wait loop before it was selected then the other thread woke it up in a previos round**. Formally:
 
@@ -537,44 +540,6 @@ During the selection period (while the thread is selected) the thread can execut
 , where `block` is a black box function (closure or such) injected into the selection protocol.
 
 **The `synch2` application protocol is wait-free and safe - however there is one precondition: in order to be wait-free the injected code block must be wait-free as well.** Obviously the protocol cannot itself guarantee anything about a black box function. That is its left to the developer to avoid dead-locks and kinda in the business logic.
-
-1. Egyik detektálja
-
-Vizsgálandó: a waitek közül melyik fordulhat elő párhuzamosan.
-
-non-blocking:
-
-* wait0 and wait1a => 1 felébred (wait1a=false), elvégzi a dolgát, passzív lesz
-    * ha újra aktivizálódik, mielőtt 0 felébred és a wait1b-t false-ra állítja, akkor bemegy a 2.2-be és felébreszti a 0-t
-    * ha csak később aktivizálódik, akkor a 0 felébred !active[1] miatt  
-* wait0 and wait1b => 0 felébred, majd előbb-utóbb false-ra állítja a wait1b-t, így 1 felébred
-
-safe:
-
-* indirekte: selected[0] = selected[1], valamelyik bement a wait blokkban, a fentiek szerint a másik nem.
-  * 0 bement wait0-ba, 1 elkerülte wait1x-et
-    * 0 akkor jön ki, ha 1 passzív lesz, vagy felébresztik, egyik sem lehetséges
-  * 1 bement wait1a-ba, 0 elkerülte wait0-t    
-    * 1 akkor jön ki, ha 0 passzív lesz, vagy felébresztik, egyik sem lehetséges
-  * 1 bement wait1b-be, 0 elkerülte wait0-t    
-    * 1 akkor jön ki, ha 0 passzív lesz, vagy felébresztik, egyik sem lehetséges
-
-wait:
-
-* before_wait
-* in_wait(x)
-* after_wait(x)
-* avoided_wait
-
-* 0 bement wait0-ba, 1 elkerülte wait1x-et
-  * 0 akkor jön ki, ha 1 passzív lesz, vagy felébresztik, egyik sem lehetséges
-
-in_wait(0) < selected(0) < unselected(r, 1) => 
-
-vagy inaktiválódott 1 vagy felébresztette 0-t:
-
-    (1) wait(0) < inactive(r', 1) < selected(0)
-
 vagy
 
     (2) wait(0) < wakeup(r', 0) < after_wait(0) < selected(0) < inactive(0)
