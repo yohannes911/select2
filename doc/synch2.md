@@ -68,10 +68,13 @@ Properties
  
 #### exit guard ####
 
-* how exits: other thread is either deactivated or wakes this up
-  * the latter could only done by the waker
-  * only other thread sets wait[i] to false
-* is the waker role exclusive?
+* **how exits?** other thread is either deactivated or this is waken up by setting wait[i] to false
+* **wake up by setting wait[i] to false**
+  * only the other thread can set this wait[i] flag to false
+  * this happens in the guard as well
+  * only the waker thread can wakeup
+* **waker**
+  * is the waker role exclusive?
 
 ### Wait-free ###
 
