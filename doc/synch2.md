@@ -32,17 +32,6 @@ Protocol
 
             yield
 
-        # change waker if it was not the one
-        if not waker == i:
-            # change waker to this thread
-            waker = i
-
-            # acknowledge other thread about change
-            waker_change = true
-
-            # wait until other thread is either deactivated or acknowledges 
-            while active[i + 1] and waker_change: yield
-
     
     # #########################################################################
     # finish
@@ -54,27 +43,45 @@ Protocol
     # mark this deselected
     select[i] = false
 
+    # change waker if it was not the one
+    if not waker == i:
+       # change waker to this thread
+       waker = i
+
+       # acknowledge other thread about change
+       waker_change = true
+
+       # wait until other thread is either deactivated or acknowledges 
+       while active[i + 1] and waker_change: yield
+
     # mark this inactive
     active[i] = false
 
 Properties
 -------------------------------------------------------------------------------
 
-### Internals ###
+### Internal properties ###
 
 #### enter guard ####
 
-* either thread enters
+1. **either thread enters**
  
 #### exit guard ####
 
-* **how exits?** other thread is either deactivated or this is waken up by setting wait[i] to false
-* **wake up by setting wait[i] to false**
-  * only the other thread can set this wait[i] flag to false
-  * this happens in the guard as well
-  * only the waker thread can wakeup
-* **waker**
-  * is the waker role exclusive?
+1. **how exits?** other thread is either deactivated or this is waken up by setting wait[i] to false
+1. **waker and wake up by setting wait[i] to false**
+   1. only the other thread can set this wait flag to false
+   1. wakeup can only happen in the guard
+   1. only the waker thread can wakeup
+   1. the waker role is exclusive
+   1. if a thread was not the waker when entered, it becomes just before deactivating
+   1. if a thread exits the guard it was not the waker at that time
+   1. if a thread exits the guard either (1) the other thread was inactive or (2) lefts in the guard as waker
+
+#### general ####
+
+1. if a thread exits or avoids the guard **it did not wake the other thread up**
+1. if this thread was still active when the other thread deactivated then either (1) this thread will deactivate before the other reenters or **(2) the other thread enters the guard**
 
 ### Wait-free ###
 
