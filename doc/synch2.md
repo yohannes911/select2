@@ -14,14 +14,14 @@ Protocol
     # #########################################################################
     # guard
     # #########################################################################
-    if active[i + 1]
+    if active[i + 1]:
 
         # mark this to be in wait 
         wait[i] = true
 
-        # wait while other thread is active and this is not awaken
+        # wait until the other thread is deactived or wakes this up
         while active[i + 1] and wait[i]:
-            if waker == i
+            if waker == i:
                 # if waker change is not in progress wakeup other thread
                 if not waker_change: wait[i + 1] = false
                     
@@ -30,7 +30,7 @@ Protocol
                     # ackmowledge initiator
                     waker_change = false
 
-             yield
+            yield
 
         # change waker if it was not the one
         if not waker == i:
@@ -40,7 +40,7 @@ Protocol
             # acknowledge other thread about change
             waker_change = true
 
-            # wait until other thread is deactivated or acknowledges 
+            # wait until other thread is either deactivated or acknowledges 
             while active[i + 1] and waker_change: yield
 
     
@@ -62,15 +62,16 @@ Properties
 
 ### Internals ###
 
-#### guard ####
+#### enter guard ####
 
 * either thread enters
-* how exits: other thread is either deactivated or wakes up, the latter could only done by the waker
  
-#### waker ####
+#### exit guard ####
 
-* waker_change can only happen when other thread is still in wait loop?
-* is the role exclusive?
+* how exits: other thread is either deactivated or wakes this up
+  * the latter could only done by the waker
+  * only other thread sets wait[i] to false
+* is the waker role exclusive?
 
 ### Wait-free ###
 
