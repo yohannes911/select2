@@ -17,7 +17,7 @@ Summary
 * **safe**: at most one code is executed at any time, parallel execution never happens
 * **wait-free**: the code injected to the thread will be eventually executed
 
-This protocol is similar to [`select2`](select2.md)), however this version mimicks the Java `synchronization` primitive.
+This protocol is similar to [`select2`](select2.md), however this version mimicks the Java `synchronization` primitive.
 
 ### Implementation ###
 
@@ -277,10 +277,10 @@ internal events:
 			selected(1) = false
             state(1) = NEXT_WAIT(1b)
 
-    next_wait(1b) # marks that next wait goes into wait1b
+    nextwait(1b) # marks that next wait goes into wait1b
 		pre_condition: state(1) = NEXT_WAIT(1b)
 		post_conditions: 
-			wait(1b) = false
+			wait(1b) = true
             state(1) = DEACTIVATE
 
 #### deactivate thread i ####
