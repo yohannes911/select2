@@ -12,29 +12,22 @@ Threads are numbered as `0` and `1` in the protocol.
     # activation
     activate(i) = 
         active[i] = true
-        state = GUARD
 
     # guard
     guard(i) = 
 		if active[i + 1]: 
-            state[i] = WAIT
+            if i == 1:  wait1 = true
             wait(i) =
                case if i == 0: while active[1] and not wait1: yield()
-               case if i == 1: 
-                   wait1 = true; 
-                   while active[0] and wait1: yield()
-               state[i] = SELECT
-        else: 
-            state[i] = SELECT
+               case if i == 1: while active[0] and wait1: yield()
 
     # select
     select(i)
     deselect(i)
+    deactivate(i) = active[i] = false
     unwait1() = 
         if i == 0 and wait1:
             wait1 = false
-        state[i] = DEACTIVATE
-    deactivate(i) = active[i] = false
 
 
 **Wait-free**: If a thread enters the `synch2` protocol, then it will be (1) eventually selected and (2) terminate in finite steps.
@@ -149,50 +142,40 @@ hence due to the (iii) condition `thread i + 1` detected `thread i` as active an
 
 ---
 
-**Safety**: The protocol is safe, threads are never selected in parallel.
- 
-Proof: Indirectly assume that both thread is selected in parallel.
+**Safe**: 
 
-`thread 0` history is either misses the `wait(0)` loop or it does contain it:
+_1. thread 0 was in loop_:
 
-_Case 1 - `thread 0` did not enter the `wait(0)` loop_: it has such a history as:
+     activate(0) < guard(0) < wait(0) < select(0)
 
-    [state(0) = GUARD, active[0] = true, active[1] = false], guard(0), 
-    [state(0) = SELECT, active[0] = true, active[1] = false], ..., select(0)
+_1.1. woke up by deactivation_: OK
 
-Since this case `thread 0` has not detected `thread 1` as active, hence `thread 1` did detect it as active and went into its own wait loop
+     activate(0) < guard(0) < wait(0) < deactivate(1) < wait(0) < select(0)
 
-    [state(1) = GUARD, active[0] = true, active[1] = true], guard(1), 
-    [state(1) = WAIT, active[0] = true, active[1] = true], wait(1), ..., select(1)
-    
-In order to wake up `thread 1` at least one of its wait conditions `active[0]` or `wait1` must become false:
+thread1 will be blocked
 
->     wait(i) =
->         ....
->         case if i == 1: 
->             wait1 = true; 
->             while active[0] and wait1: yield()
+_1.2. woke up by wait1 => true_: OK
 
+     activate(0) < guard(0) < wait(0) < guard(1) < wait(0) < select(0)
 
-However when `thread 1` entered its wait loop `thread 0` was not just already active but already executed its guard statement as well, beacuse it executed its guard before `thread 1` became active:
+again thread1 will be blocked
 
-    guard(0) < activate(1) < wait(1)
+_2. thread 1 was in loop_:
 
-Hence `thread 1` can can wake up only after `thread 0` becomes unselected. Contradiction.
+     activate(1) < guard(1) < wait(1) < select(1)
 
+_2.1. woke up by deactivation_:
 
-_Case 2 - `thread 0` did enter the `wait(0)` loop_: it has such a history as:
+     activate(1) < guard(1) < wait(1) < deactivate(0) < wait(1) < select(1)
 
-    [state(0) = GUARD, active[1] = true], guard(0), [state(0) = WAIT, active[1] = true], wait(0), ..., select(0)
+     deactivate(0) < unwait(1) < activate(0) < guard(0) < ? < select(0)
 
-`thread 0` could be waken up from its wait iff `thread 1` is either deactivated or entered its wait loop:
+falls back to case 1
 
-_Case 2a - `thread 1` is deactivated_: hence its history is kinda:
+_2.2. woke up by wait1 => false_: OK
 
-    deactivate(1), [state(0) = SELECT, active[1] = false], ..., select(0)
+     activate(1) < guard(1) < wait(1) < unwait(1) < wait(1) < select(1)
 
-Since deactivation happens after selection, `thread 1` must have been deactivated in a previous round. However in the next round it then detects `thread 0` as active, hence goes into its `wait(1)` loop and stays there until `thread 0` is deselected then deactivated. Contradiction.
+     unwait(1) < activate(0) < guard(0) < ? < select(0)
 
-_Case 2b - `thread 1` entered its wait loop_: we fall back to the above case, since `thread 1` will stay in its loop until `thread 0` is deselected.
-
-
+falls back to case 1
