@@ -73,6 +73,9 @@ Protocol
     # mark this deselected
     select[i] = false
 
+    # increment timestamp
+    timestamp++
+
     # mark this inactive
     active[i] = false
 
