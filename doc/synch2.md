@@ -49,10 +49,12 @@ Protocol
        waker = i
 
        # acknowledge other thread about change
-       waker_change = true
+       if active[i + 1]:
+           # acknowledge
+           waker_change = true
 
-       # wait until other thread is either deactivated or acknowledges 
-       while active[i + 1] and waker_change: yield
+           # wait until other thread is either deactivated or acknowledges 
+           while active[i + 1] and waker_change: yield
 
     # mark this inactive
     active[i] = false
