@@ -19,16 +19,18 @@ Protocol
         # mark this to be in wait 
         wait[i] = true
 
+        # if waker change is in progress acknowledge it since the initiator might be waiting on it
+        if waker_change: waker_change = false
+
         # wait until the other thread is deactived or wakes this up
         while active[i + 1] and wait[i]:
+            # if this is waker either wake up the other thread or acknowledge waker change
             if waker == i:
                 # if waker change is not in progress wakeup other thread
                 if not waker_change: wait[i + 1] = false
                     
-                # waker change protocol of receiver
-                else:
-                    # ackmowledge initiator
-                    waker_change = false
+                # otherwise acknowledge it
+                else: waker_change = false
 
             yield
 
@@ -43,7 +45,7 @@ Protocol
     # mark this deselected
     select[i] = false
 
-    # change waker if it was not the one
+    # change waker if this is not the one
     if not waker == i:
        # change waker to this thread
        waker = i
@@ -55,6 +57,9 @@ Protocol
 
            # wait until other thread is either deactivated or acknowledges 
            while active[i + 1] and waker_change: yield
+
+           # for the case when the other thread became inactive
+           waker_change = false
 
     # mark this inactive
     active[i] = false
