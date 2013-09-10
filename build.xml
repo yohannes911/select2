@@ -1,104 +1,28 @@
 <project default="dist">
-	<!-- common -->
-	<property name="src" location="src"/>
 	<property name="doc" location="doc"/>
-	<property name="build" location="build"/>
 	<property name="dist"  location="dist"/>
-   
-   <target name="dev-dist" depends="dist, dev-doc"/>
-   
-   <target name="dev-doc">
-      <javadoc 
-         packagenames="mt.*"
-         destdir="${dist}/doc/api"
-         author="true"
-         version="true"
-         use="true"
-         windowtitle="Multithreading playground"
-         Encoding="utf-8"
-         docencoding="utf-8"
-         Locale="hu_HU"
-         charset="UTF-8">
-         
-         <packageset dir="${src}/java" defaultexcludes="yes">
-            <include name="**"/>
-         </packageset>   
-      
-      </javadoc>
-   </target>
-   
+
 	<target name="clean-dist" depends="clean, dist"/>
-   
-    <target name="dist" depends="java-jar, scala-jar">
-		<mkdir dir="${dist}/doc"/>
-		
-		<!-- copy docs -->
-		<copy file="README.md" todir="${dist}"/>
-		<copy file="doc/select2.md" todir="${dist}/doc"/>
+
+	<target name="dist-packages">
+		<subant target="dist">
+			<fileset dir="select2-java" includes="build.xml"/>
+		</subant>
+		<subant target="dist">
+			<fileset dir="select2-scala" includes="build.xml"/>
+		</subant>
 	</target>
-		
-	<target name="jar">
-		<mkdir dir="${dist}"/>
-		<mkdir dir="${dist}/lib"/>
-		
-		<!-- package classes -->
-		<jar jarfile="${dist}/lib/${lang}-select.jar" basedir="${build}"/>
-		
-		<delete dir="${build}"/>
-	</target>
-	
+
 	<target name="clean">
 		<delete dir="${build}"/>
-		<delete dir="${dist}"/>	
+		<delete dir="${dist}"/>
 	</target>
 
-	<!-- java -->
-	
-    <target name="java-dist" depends="java-build, java-jar"/>
-	
-    <target name="java-jar" depends="java-build">
-		<antcall target="jar">
-			<param name="lang" value="java"/>
-		</antcall>		
-	</target>
+	<target name="dist" depends="dist-packages">
+		<mkdir dir="${dist}/doc"/>
 
-	<target name="java-build" description="compile Java source">
-		<mkdir dir="${build}"/>		
-		<javac srcdir="${src}/java" destdir="${build}" encoding="UTF-8"/>
+		<!-- copy docs -->
+		<copy file="README.md" todir="${dist}"/>
+		<copy file="${doc}/select2.md" todir="${dist}/doc"/>
 	</target>
-
-	<!-- scala -->
-	
-    <target name="scala-dist" depends="scala-build, scala-jar"/>
-	
-    <target name="scala-jar" depends="scala-build">
-		<antcall target="jar">
-			<param name="lang" value="scala"/>
-		</antcall>		
-	</target>
-		
-	<target name="scala-build" description="compile Scala source" depends="scala-init">
-		<mkdir dir="${build}"/>
-		<scalac srcdir="${src}/scala" destdir="${build}" encoding="UTF-8" classpathref="scala.build.classpath" addparams="-language:implicitConversions"/>
-	</target>
-
-	<target name="scala-init">
-		<property file="scala.properties" />
-		<property name="scala-library.jar" value="${scala.home}/lib/scala-library.jar"/>
-	   
-		<path id="scala.build.classpath">
-			<pathelement location="${scala-library.jar}"/>
-			<pathelement location="${build}"/>
-		</path>
-	
-		<taskdef resource="scala/tools/ant/antlib.xml">
-			<classpath>
-				<pathelement location="${scala.home}/lib/scala-compiler.jar"   />
-				<!-- NEW: For scala 2.10.2 you need scala-reflect: -->
-				<pathelement location="${scala.home}/lib/scala-reflect.jar"   />
-				<pathelement location="${scala-library.jar}"   />
-			</classpath>
-		</taskdef>
-	</target>	
-
 </project>

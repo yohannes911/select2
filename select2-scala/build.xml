@@ -1,0 +1,62 @@
+<project default="dist">
+	<!-- common -->
+	<property name="src" location="src"/>
+	<property name="build" location="build"/>
+	<property name="dist"  location="../dist"/>
+   
+	<target name="dev-dist" depends="dist"/>
+
+	<target name="clean-dist" depends="clean, dist"/>
+   
+    <target name="dist" depends="scala-jar"/>
+		
+	<target name="jar">
+		<mkdir dir="${dist}"/>
+		<mkdir dir="${dist}/lib"/>
+		
+		<!-- package classes -->
+		<jar jarfile="${dist}/lib/${lang}-select.jar" basedir="${build}"/>
+		
+		<delete dir="${build}"/>
+	</target>
+	
+	<target name="clean">
+		<delete dir="${build}"/>
+		<delete dir="${dist}"/>	
+	</target>
+
+	<!-- scala -->
+	
+    <target name="scala-dist" depends="scala-build, scala-jar"/>
+	
+    <target name="scala-jar" depends="scala-build">
+		<antcall target="jar">
+			<param name="lang" value="scala"/>
+		</antcall>		
+	</target>
+		
+	<target name="scala-build" description="compile Scala source" depends="scala-init">
+		<mkdir dir="${build}"/>
+		<scalac srcdir="${src}/main/scala" destdir="${build}" encoding="UTF-8" classpathref="scala.build.classpath" addparams="-language:implicitConversions"/>
+	</target>
+
+	<target name="scala-init">
+		<property file="scala.properties" />
+		<property name="scala-library.jar" value="${scala.home}/lib/scala-library.jar"/>
+	   
+		<path id="scala.build.classpath">
+			<pathelement location="${scala-library.jar}"/>
+			<pathelement location="${build}"/>
+		</path>
+	
+		<taskdef resource="scala/tools/ant/antlib.xml">
+			<classpath>
+				<pathelement location="${scala.home}/lib/scala-compiler.jar"   />
+				<!-- NEW: For scala 2.10.2 you need scala-reflect: -->
+				<pathelement location="${scala.home}/lib/scala-reflect.jar"   />
+				<pathelement location="${scala-library.jar}"   />
+			</classpath>
+		</taskdef>
+	</target>	
+
+</project>
